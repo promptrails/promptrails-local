@@ -1,0 +1,38 @@
+[
+  {
+    "id": "3A1tqetjJRONBh4rzm5LFbbF8Ta",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "content": "Customer name is Bahattin, preferred language is Turkish",
+    "memory_type": "fact",
+    "importance": 0.9,
+    "access_count": 1
+  },
+  {
+    "id": "3A1tqfceakoQS5LkVaC2SYLO0bR",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "content": "The product is PromptRails, an AI agent orchestration platform",
+    "memory_type": "fact",
+    "importance": 0.8,
+    "access_count": 1
+  },
+  {
+    "id": "3A1tqjgnDyLvyiE8WAzjRxTnyco",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "content": "When asked about pricing, refer to the subscription plans page",
+    "memory_type": "procedure",
+    "importance": 0.7,
+    "access_count": 0
+  },
+  {
+    "id": "3A1tqg6dBxOk45X9wcykIUkN0Eb",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "content": "PromptRails supports simple, chain, and multi-agent workflows",
+    "memory_type": "semantic",
+    "importance": 0.8,
+    "access_count": 0
+  }
+]

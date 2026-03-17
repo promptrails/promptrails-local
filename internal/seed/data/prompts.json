@@ -1,0 +1,58 @@
+[
+  {
+    "id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "User List Report",
+    "description": "Give me User list Report",
+    "status": "active"
+  },
+  {
+    "id": "39zM7meSZQuSnrPeJSvT46tw13i",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Generate Articles",
+    "description": "Generate Articles For type",
+    "status": "active"
+  },
+  {
+    "id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Agent Chain Example 1",
+    "description": "First step in a chain agent — generates content based on topic and language",
+    "status": "active"
+  },
+  {
+    "id": "3A1bZ4XCmtDy84XvWlXfzvpj04J",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Agent Chain Example 2",
+    "description": "Second step in a chain agent — summarizes the output from step 1",
+    "status": "active"
+  },
+  {
+    "id": "3A1brO9jKYggsosrVt9i16ek9EZ",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Researcher Agent Prompt",
+    "description": "Researches and gathers key facts about a given topic",
+    "status": "active"
+  },
+  {
+    "id": "3A1brNB8U4cQSEzvZgkCQzQYqr1",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Critic Agent Prompt",
+    "description": "Provides constructive criticism and identifies weak points",
+    "status": "active"
+  },
+  {
+    "id": "3A1brQJyswb4AYON6R1hGUqmZwI",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Creative Writer Prompt",
+    "description": "Generates creative and engaging content from a different angle",
+    "status": "active"
+  },
+  {
+    "id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Simple Chat Prompt",
+    "description": "A simple chat prompt for testing",
+    "status": "active"
+  }
+]

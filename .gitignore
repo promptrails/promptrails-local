@@ -1,0 +1,20 @@
+# Binary
+promptrails-local
+promptrails-local.exe
+
+# GoReleaser
+dist/
+
+# Vendor
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

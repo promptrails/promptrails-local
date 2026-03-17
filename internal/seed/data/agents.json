@@ -1,0 +1,56 @@
+[
+  {
+    "id": "39wNZZu78VawB207IOPonkoP38J",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Simple Agent",
+    "description": "Simple Agent Example",
+    "type": "simple",
+    "status": "active",
+    "labels": []
+  },
+  {
+    "id": "39yGAxRlO2XhbjVeL8CvHfLQoTQ",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Simple Agent With Parameter",
+    "description": "Simple Agent With Parameter Example",
+    "type": "simple",
+    "status": "active",
+    "labels": []
+  },
+  {
+    "id": "3A1of4w66pHlVbW1qZJNoCmrdhL",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Chain Example",
+    "description": "A chain agent that writes an article and then summarizes it",
+    "type": "chain",
+    "status": "active",
+    "labels": []
+  },
+  {
+    "id": "3A1oiCd6VmhAa8ExpruAXin5Nsi",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Multi-Perspective Analysis",
+    "description": "Three agents analyze a topic in parallel from different angles: research, criticism, and creative writing",
+    "type": "multi_agent",
+    "status": "active",
+    "labels": []
+  },
+  {
+    "id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Simple Chat Bot",
+    "description": "A simple chat bot for testing the chat functionality",
+    "type": "simple",
+    "status": "active",
+    "labels": []
+  },
+  {
+    "id": "3A9W6D5SHOcAjZVHLmD9v0PrBD4",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Approval Agent Example",
+    "description": "Demonstrates human-in-the-loop approval. Output is held for review before the execution is marked as completed.",
+    "type": "simple",
+    "status": "active",
+    "labels": []
+  }
+]

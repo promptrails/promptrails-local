@@ -1,0 +1,14 @@
+[
+  {
+    "id": "39zCPFivmR9jvtu4dNUIANpngLm",
+    "agent_id": "39wNZZu78VawB207IOPonkoP38J",
+    "type": "output",
+    "scanner_type": "pii",
+    "action": "redact",
+    "config": {
+      "pii_types": ["email", "phone", "ssn", "credit_card"]
+    },
+    "is_active": true,
+    "sort_order": 0
+  }
+]

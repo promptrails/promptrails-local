@@ -1,0 +1,305 @@
+[
+  {
+    "id": "39zLQJj4ACsXjewoYQmA4uum7aZ",
+    "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi",
+    "version": "1.0.0",
+    "system_prompt": "You're an assistant",
+    "user_prompt": "Can you give me report about my users;\n\n{{ call(\"datasource\", \"Users\", {}) }}",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.70,
+    "max_tokens": null,
+    "top_p": null,
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": false,
+    "config": {},
+    "message": "feat: initial commit",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A0x7HOs1Sq7PQ3BaE5nNi6ldmt",
+    "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi",
+    "version": "1.1.0",
+    "system_prompt": "You're an assistant",
+    "user_prompt": "Can you give me report about my users;\n\n{{ call(\"datasource\", \"Users\", {}) }}",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.70,
+    "max_tokens": null,
+    "top_p": null,
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": false,
+    "config": {},
+    "message": "added cache",
+    "cache_timeout": 120
+  },
+  {
+    "id": "3A0yok3F9lVeLbBDFC7WIRfYS6e",
+    "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi",
+    "version": "1.2.0",
+    "system_prompt": "You're an assistant",
+    "user_prompt": "Can you give me report about my users;\n\n{{ call(\"datasource\", \"Users\", {}) }}",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.70,
+    "max_tokens": null,
+    "top_p": null,
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "fix",
+    "cache_timeout": 60
+  },
+  {
+    "id": "39zMIb3cK5QinbZaG9s30heoPnO",
+    "prompt_id": "39zM7meSZQuSnrPeJSvT46tw13i",
+    "version": "1.0.0",
+    "system_prompt": "You are a digital content writer",
+    "user_prompt": "Generate article for  {{ type }}  type",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.70,
+    "max_tokens": null,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ]
+    },
+    "output_schema": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "articles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["description", "name"],
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "is_current": true,
+    "config": {},
+    "message": "initial commit",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1bXXFiVEeivp9byLGmthHEQat",
+    "prompt_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5",
+    "version": "",
+    "system_prompt": "You are a content writer. Write in {{ language }}.",
+    "user_prompt": "Write a short article about {{ topic }}. Keep it concise and informative.",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.70,
+    "max_tokens": 1024,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "topic",
+          "type": "string",
+          "required": true,
+          "description": "The topic to write about"
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "required": false,
+          "description": "Target language (default: English)"
+        }
+      ]
+    },
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1babZQzPRK3aPSYeMH5I4Shn2",
+    "prompt_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J",
+    "version": "",
+    "system_prompt": "You are a skilled editor and summarizer.",
+    "user_prompt": "Summarize the following article into 3 bullet points:\n\n{{ previous_output }}",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.50,
+    "max_tokens": 512,
+    "top_p": null,
+    "input_schema": {
+      "parameters": []
+    },
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1bwDLHTrbumo4NKNFmc6vtm1h",
+    "prompt_id": "3A1brO9jKYggsosrVt9i16ek9EZ",
+    "version": "",
+    "system_prompt": "You are a thorough researcher. Analyze topics with academic rigor.",
+    "user_prompt": "Research the topic \"{{ topic }}\" with {{ depth }} depth. List key facts, statistics, and notable perspectives.",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.40,
+    "max_tokens": 1024,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "topic",
+          "type": "string",
+          "required": true,
+          "description": "The subject to research"
+        },
+        {
+          "name": "depth",
+          "type": "string",
+          "required": false,
+          "description": "Research depth: brief, moderate, or comprehensive"
+        }
+      ]
+    },
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1bwAHPlXSn8pj80EygpO7sYMt",
+    "prompt_id": "3A1brNB8U4cQSEzvZgkCQzQYqr1",
+    "version": "",
+    "system_prompt": "You are a sharp critic. Identify weaknesses, biases, and gaps in arguments.",
+    "user_prompt": "Critically analyze the topic \"{{ topic }}\". Identify common misconceptions, weak arguments, and areas that need more evidence.",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.60,
+    "max_tokens": 1024,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "topic",
+          "type": "string",
+          "required": true,
+          "description": "The subject to critique"
+        }
+      ]
+    },
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1bwEnBwB25tiNC5YCb2vmgYZ3",
+    "prompt_id": "3A1brQJyswb4AYON6R1hGUqmZwI",
+    "version": "",
+    "system_prompt": "You are a creative writer with a flair for storytelling and metaphor.",
+    "user_prompt": "Write a compelling, creative piece about \"{{ topic }}\" in a {{ tone }} tone. Use vivid imagery and engaging narrative.",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqA01aA",
+    "temperature": 0.90,
+    "max_tokens": 1024,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "topic",
+          "type": "string",
+          "required": true,
+          "description": "The subject to write about"
+        },
+        {
+          "name": "tone",
+          "type": "string",
+          "required": false,
+          "description": "Writing tone: playful, serious, poetic, or provocative"
+        }
+      ]
+    },
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1tW7LTqpqXjBKDdrWmf9LhKSR",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+    "version": "1.0.0",
+    "system_prompt": "You are a helpful assistant.",
+    "user_prompt": "{{ message }}",
+    "llm_model_id": null,
+    "temperature": 0.70,
+    "max_tokens": null,
+    "top_p": null,
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": false,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1uLw5IevuIumpzLmsDB10pyae",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+    "version": "1.1.0",
+    "system_prompt": "You are a helpful assistant. Answer questions clearly and concisely.",
+    "user_prompt": "{{ message }}",
+    "llm_model_id": null,
+    "temperature": 0.70,
+    "max_tokens": null,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "User message"
+        }
+      ]
+    },
+    "output_schema": null,
+    "is_current": false,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  },
+  {
+    "id": "3A1unemNTVkoPHg84fdQ4MbB7UW",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+    "version": "1.2.0",
+    "system_prompt": "You are a helpful assistant. Answer questions clearly and concisely.",
+    "user_prompt": "{{ message }}",
+    "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqP33iL",
+    "temperature": 0.70,
+    "max_tokens": 1024,
+    "top_p": null,
+    "input_schema": {
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "User message"
+        }
+      ]
+    },
+    "output_schema": null,
+    "is_current": true,
+    "config": {},
+    "message": "",
+    "cache_timeout": 0
+  }
+]

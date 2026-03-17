@@ -1,0 +1,269 @@
+[
+  {
+    "id": "39wNaye0QQTu2bshnTY7oIIPtmr",
+    "agent_id": "39wNZZu78VawB207IOPonkoP38J",
+    "version": "1.0.0",
+    "config": {
+      "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi"
+    },
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": false,
+    "message": "initial commit"
+  },
+  {
+    "id": "39zCQTQkLglvPoywvCVgKhyVUUj",
+    "agent_id": "39wNZZu78VawB207IOPonkoP38J",
+    "version": "2.0.0",
+    "config": {
+      "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi"
+    },
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": false,
+    "message": "added guard"
+  },
+  {
+    "id": "39zLSdOPgYYxUkvsf7wLsZt0INy",
+    "agent_id": "39wNZZu78VawB207IOPonkoP38J",
+    "version": "2.1.0",
+    "config": {
+      "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi"
+    },
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": true,
+    "message": "fix"
+  },
+  {
+    "id": "39yGCVAOz6Fy13k8rkraKX40NLM",
+    "agent_id": "39yGAxRlO2XhbjVeL8CvHfLQoTQ",
+    "version": "1.0.0",
+    "config": {
+      "prompt_id": "39zM7meSZQuSnrPeJSvT46tw13i"
+    },
+    "input_schema": {
+      "type": "object",
+      "required": ["topic"],
+      "properties": {
+        "topic": { "type": "string" }
+      }
+    },
+    "output_schema": null,
+    "is_current": false,
+    "message": "initial commit"
+  },
+  {
+    "id": "39zMKMs8hpNbj60BpYLzmM79F3o",
+    "agent_id": "39yGAxRlO2XhbjVeL8CvHfLQoTQ",
+    "version": "1.1.0",
+    "config": {
+      "prompt_id": "39zM7meSZQuSnrPeJSvT46tw13i"
+    },
+    "input_schema": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string" }
+      }
+    },
+    "output_schema": null,
+    "is_current": true,
+    "message": "fix"
+  },
+  {
+    "id": "3A1of7ewdgW5QbX2bhRgm30v7z9",
+    "agent_id": "3A1of4w66pHlVbW1qZJNoCmrdhL",
+    "version": "v1",
+    "config": {
+      "prompt_ids": [
+        { "role": "writer", "sort_order": 1, "prompt_version_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5" },
+        { "role": "summarizer", "sort_order": 2, "prompt_version_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J" }
+      ]
+    },
+    "input_schema": {
+      "type": "object",
+      "required": ["topic"],
+      "properties": {
+        "topic": { "type": "string" },
+        "language": { "type": "string" }
+      }
+    },
+    "output_schema": null,
+    "is_current": false,
+    "message": ""
+  },
+  {
+    "id": "3A1ogGTmQEXVsCJH3kdnS3qoh12",
+    "agent_id": "3A1of4w66pHlVbW1qZJNoCmrdhL",
+    "version": "v1",
+    "config": {
+      "prompt_ids": [
+        { "role": "writer", "sort_order": 1, "prompt_version_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5" },
+        { "role": "summarizer", "sort_order": 2, "prompt_version_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J" }
+      ]
+    },
+    "input_schema": {
+      "type": "object",
+      "required": ["topic"],
+      "properties": {
+        "topic": { "type": "string" },
+        "language": { "type": "string" }
+      }
+    },
+    "output_schema": null,
+    "is_current": true,
+    "message": ""
+  },
+  {
+    "id": "3A1oiHlhtcr86C0YoNLcVbrWyVO",
+    "agent_id": "3A1oiCd6VmhAa8ExpruAXin5Nsi",
+    "version": "v1",
+    "config": {
+      "prompt_ids": [
+        { "role": "researcher", "sort_order": 1, "prompt_version_id": "3A1brO9jKYggsosrVt9i16ek9EZ" },
+        { "role": "critic", "sort_order": 2, "prompt_version_id": "3A1brNB8U4cQSEzvZgkCQzQYqr1" },
+        { "role": "creative-writer", "sort_order": 3, "prompt_version_id": "3A1brQJyswb4AYON6R1hGUqmZwI" }
+      ]
+    },
+    "input_schema": {
+      "type": "object",
+      "required": ["topic"],
+      "properties": {
+        "tone": { "type": "string", "description": "Writing tone" },
+        "depth": { "type": "string", "description": "Research depth" },
+        "topic": { "type": "string", "description": "The subject to analyze" }
+      }
+    },
+    "output_schema": null,
+    "is_current": true,
+    "message": ""
+  },
+  {
+    "id": "3A1tcpcvIpHarZxdcQ2r2ikxlxR",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "version": "1.0.0",
+    "config": {},
+    "input_schema": {},
+    "output_schema": null,
+    "is_current": false,
+    "message": ""
+  },
+  {
+    "id": "3A1tlyyoVboU3DCSeJdHwJSHFRJ",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "version": "1.1.0",
+    "config": {
+      "max_tokens": 1024,
+      "temperature": 0.7,
+      "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqP33iL"
+    },
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "required": true, "description": "User message" }
+      }
+    },
+    "output_schema": null,
+    "is_current": false,
+    "message": ""
+  },
+  {
+    "id": "3A1uCGlMyhwNeobtIc80ZL1eSCx",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "version": "1.2.0",
+    "config": {
+      "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+      "max_tokens": 1024,
+      "temperature": 0.7,
+      "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqP33iL"
+    },
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "required": true, "description": "User message" }
+      }
+    },
+    "output_schema": null,
+    "is_current": false,
+    "message": ""
+  },
+  {
+    "id": "3A1uOGkuIyOgL1gwrmaSpZFzFEQ",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "version": "1.3.0",
+    "config": {
+      "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+      "max_tokens": 1024,
+      "temperature": 0.7,
+      "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqP33iL"
+    },
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "required": true, "description": "User message" }
+      }
+    },
+    "output_schema": null,
+    "is_current": false,
+    "message": ""
+  },
+  {
+    "id": "3A1upqALYNXllAc9ezSby1dGu2c",
+    "agent_id": "3A1tXOt9iovkA7LEusDSjcKbJQM",
+    "version": "1.4.0",
+    "config": {
+      "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+      "max_tokens": 1024,
+      "temperature": 0.7,
+      "llm_model_id": "2N8Dx8a2a1qUspBKbP02vqP33iL"
+    },
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "required": true, "description": "User message" }
+      }
+    },
+    "output_schema": null,
+    "is_current": true,
+    "message": ""
+  },
+  {
+    "id": "3A9WAMfAlrT6XEhUGqR4ddbGxSK",
+    "agent_id": "3A9W6D5SHOcAjZVHLmD9v0PrBD4",
+    "version": "1.0.0",
+    "config": {
+      "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+      "approval_required": true,
+      "approval_checkpoint_name": "review"
+    },
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "description": "User message" }
+      }
+    },
+    "output_schema": null,
+    "is_current": false,
+    "message": "Initial version — human approval enabled"
+  },
+  {
+    "id": "3A9X5xDFEnBKusFotcMhUWVPqMG",
+    "agent_id": "3A9W6D5SHOcAjZVHLmD9v0PrBD4",
+    "version": "1.0.1",
+    "config": {
+      "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
+      "approval_required": true,
+      "approval_checkpoint_name": "review"
+    },
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "description": "User message" }
+      }
+    },
+    "output_schema": null,
+    "is_current": true,
+    "message": "Fix prompt_id to use correct prompt (not version) ID"
+  }
+]

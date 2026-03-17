@@ -1,0 +1,45 @@
+[
+  {
+    "id": "39nvIvoHYfloihqSineHtOGX1ed",
+    "data_source_id": "39nvEGNndYnKyiTMRSvMZzvWLYn",
+    "version": "1.0.0",
+    "credential_id": "39nOwjWoDf4gwmcfM8jNMJUnifV",
+    "connection_config": {},
+    "query_template": "select * from users where role = '{{ role }}'",
+    "parameters": [
+      { "name": "role", "type": "string", "required": false, "description": "" }
+    ],
+    "is_current": true,
+    "cache_timeout": 3600,
+    "output_format": "json",
+    "message": "initial commit"
+  },
+  {
+    "id": "39nxOd0vMCqnXKHjZaCLDbYCj64",
+    "data_source_id": "39nvEGNndYnKyiTMRSvMZzvWLYn",
+    "version": "1.1.0",
+    "credential_id": "39nOwjWoDf4gwmcfM8jNMJUnifV",
+    "connection_config": {},
+    "query_template": "select\n  *\nfrom\n  users\nwhere\n  role = '{{ role }}'\nORDER by\n  id desc",
+    "parameters": [
+      { "name": "role", "type": "string", "required": false, "description": "" }
+    ],
+    "is_current": false,
+    "cache_timeout": 3600,
+    "output_format": "json",
+    "message": "add ordering"
+  },
+  {
+    "id": "39srs8h50S78qposNMw7Jq0zgsy",
+    "data_source_id": "39slyJMDBna9eqymEGSh2q4Bsxp",
+    "version": "1.0.0",
+    "credential_id": "39nOwjWoDf4gwmcfM8jNMJUnifV",
+    "connection_config": {},
+    "query_template": "select\n  first_name,\n  last_name,\n  email\nfrom\n  users;",
+    "parameters": [],
+    "is_current": true,
+    "cache_timeout": 3600,
+    "output_format": "csv",
+    "message": "initial commit"
+  }
+]

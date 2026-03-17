@@ -1,0 +1,67 @@
+version: 2
+
+builds:
+  - id: promptrails-local
+    binary: promptrails-local
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.Version={{.Version}}
+
+archives:
+  - id: default
+    builds:
+      - promptrails-local
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+
+dockers:
+  - image_templates:
+      - "promptrails/local:{{ .Version }}-amd64"
+      - "promptrails/local:latest-amd64"
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+    goarch: amd64
+
+  - image_templates:
+      - "promptrails/local:{{ .Version }}-arm64"
+      - "promptrails/local:latest-arm64"
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "promptrails/local:{{ .Version }}"
+    image_templates:
+      - "promptrails/local:{{ .Version }}-amd64"
+      - "promptrails/local:{{ .Version }}-arm64"
+
+  - name_template: "promptrails/local:latest"
+    image_templates:
+      - "promptrails/local:latest-amd64"
+      - "promptrails/local:latest-arm64"

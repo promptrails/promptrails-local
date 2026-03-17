@@ -1,0 +1,98 @@
+[
+  {
+    "id": "39qLMTuiZIhFAkGWi1uvDYnWbgY",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Linear",
+    "description": "Manage issues, projects, and sprints in Linear. Automate project management workflows.",
+    "type": "remote_mcp",
+    "config": {
+      "url": "https://mcp.linear.app/mcp",
+      "headers": {
+        "Authorization": "Bearer {{oauth_token}}"
+      },
+      "transport_type": "http"
+    },
+    "schema": null,
+    "credential_id": "39qLMUQXLShMfOWqPXb2hkQQCNH",
+    "template_id": "2pDGaLbTJ7KFfHLvlhVKKKv0Ny8",
+    "status": "active",
+    "is_active": true
+  },
+  {
+    "id": "39t0jeT0flLIQnbrDN8ZW64IGGb",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "UserList",
+    "description": "",
+    "type": "datasource",
+    "config": {
+      "data_source_id": "39slyJMDBna9eqymEGSh2q4Bsxp"
+    },
+    "schema": null,
+    "credential_id": null,
+    "template_id": null,
+    "status": "active",
+    "is_active": true
+  },
+  {
+    "id": "39t19Doh5x2a4YS1rplvzdMHDrj",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Time",
+    "description": "",
+    "type": "builtin",
+    "config": {
+      "function": "current_time"
+    },
+    "schema": null,
+    "credential_id": null,
+    "template_id": null,
+    "status": "active",
+    "is_active": true
+  },
+  {
+    "id": "39t1AOFHuKnayI2VrXrpLonprqM",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Date",
+    "description": "",
+    "type": "builtin",
+    "config": {
+      "function": "current_date"
+    },
+    "schema": null,
+    "credential_id": null,
+    "template_id": null,
+    "status": "active",
+    "is_active": true
+  },
+  {
+    "id": "39t1BYJj3NXJO49HNURUIfdQGVW",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "Math",
+    "description": "",
+    "type": "builtin",
+    "config": {
+      "function": "math"
+    },
+    "schema": null,
+    "credential_id": null,
+    "template_id": null,
+    "status": "active",
+    "is_active": true
+  },
+  {
+    "id": "39t879Rf5LHhyVquDoyTNHHDgJu",
+    "workspace_id": "2N8Dx8a2a1qUspBKbP02vqP29eH",
+    "name": "LLM API Status",
+    "description": "",
+    "type": "api",
+    "config": {
+      "url": "http://localhost:8082/health",
+      "method": "GET",
+      "headers": {}
+    },
+    "schema": null,
+    "credential_id": null,
+    "template_id": null,
+    "status": "active",
+    "is_active": true
+  }
+]
