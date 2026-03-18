@@ -1,0 +1,11 @@
+{
+  "name": "promptrails-local-integration-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test_integration.mjs"
+  },
+  "dependencies": {
+    "@promptrails/sdk": "latest"
+  }
+}

@@ -18,3 +18,11 @@ vendor/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test artifacts
+tests/python/.venv/
+tests/python/.pytest_cache/
+tests/python/uv.lock
+tests/js/node_modules/
+tests/js/package-lock.json
+__pycache__/
