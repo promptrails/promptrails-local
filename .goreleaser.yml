@@ -38,8 +38,8 @@ changelog:
 
 dockers:
   - image_templates:
-      - "promptrails/local:{{ .Version }}-amd64"
-      - "promptrails/local:latest-amd64"
+      - "bahattincinic/promptrails-local:{{ .Version }}-amd64"
+      - "bahattincinic/promptrails-local:latest-amd64"
     dockerfile: Dockerfile.goreleaser
     use: buildx
     build_flag_templates:
@@ -47,8 +47,8 @@ dockers:
     goarch: amd64
 
   - image_templates:
-      - "promptrails/local:{{ .Version }}-arm64"
-      - "promptrails/local:latest-arm64"
+      - "bahattincinic/promptrails-local:{{ .Version }}-arm64"
+      - "bahattincinic/promptrails-local:latest-arm64"
     dockerfile: Dockerfile.goreleaser
     use: buildx
     build_flag_templates:
@@ -56,12 +56,12 @@ dockers:
     goarch: arm64
 
 docker_manifests:
-  - name_template: "promptrails/local:{{ .Version }}"
+  - name_template: "bahattincinic/promptrails-local:{{ .Version }}"
     image_templates:
-      - "promptrails/local:{{ .Version }}-amd64"
-      - "promptrails/local:{{ .Version }}-arm64"
+      - "bahattincinic/promptrails-local:{{ .Version }}-amd64"
+      - "bahattincinic/promptrails-local:{{ .Version }}-arm64"
 
-  - name_template: "promptrails/local:latest"
+  - name_template: "bahattincinic/promptrails-local:latest"
     image_templates:
-      - "promptrails/local:latest-amd64"
-      - "promptrails/local:latest-arm64"
+      - "bahattincinic/promptrails-local:latest-amd64"
+      - "bahattincinic/promptrails-local:latest-arm64"

@@ -9,7 +9,7 @@ Develop and test your PromptRails integrations locally without a real backend. A
 ### Docker (recommended)
 
 ```bash
-docker run -p 8080:8080 promptrails/local
+docker run -p 8080:8080 bahattincinic/promptrails-local
 ```
 
 ### Docker Compose
@@ -17,7 +17,7 @@ docker run -p 8080:8080 promptrails/local
 ```yaml
 services:
   promptrails-local:
-    image: promptrails/local
+    image: bahattincinic/promptrails-local
     ports:
       - "8080:8080"
 ```
@@ -174,7 +174,7 @@ promptrails-local --fixtures ./my-fixtures/
 promptrails-local --seed=false --fixtures ./my-fixtures/
 
 # Docker with mounted fixtures
-docker run -p 8080:8080 -v ./my-fixtures:/fixtures -e FIXTURES=/fixtures promptrails/local
+docker run -p 8080:8080 -v ./my-fixtures:/fixtures -e FIXTURES=/fixtures bahattincinic/promptrails-local
 ```
 
 The directory can contain any of these JSON files (all optional):
