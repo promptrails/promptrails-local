@@ -27,7 +27,7 @@ func main() {
 	flag.Parse()
 
 	logger := initLogger(*logLevel)
-	defer logger.Sync()
+	defer logger.Sync() //nolint:errcheck
 
 	s := store.New()
 
@@ -110,8 +110,9 @@ func envStr(key, def string) string {
 func envInt(key string, def int) int {
 	if v := os.Getenv(key); v != "" {
 		var i int
-		fmt.Sscanf(v, "%d", &i)
-		return i
+		if _, err := fmt.Sscanf(v, "%d", &i); err == nil {
+			return i
+		}
 	}
 	return def
 }
