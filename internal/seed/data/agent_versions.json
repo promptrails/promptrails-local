@@ -77,8 +77,8 @@
     "version": "v1",
     "config": {
       "prompt_ids": [
-        { "role": "writer", "sort_order": 1, "prompt_version_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5" },
-        { "role": "summarizer", "sort_order": 2, "prompt_version_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J" }
+        { "role": "writer", "sort_order": 1, "prompt_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5" },
+        { "role": "summarizer", "sort_order": 2, "prompt_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J" }
       ]
     },
     "input_schema": {
@@ -99,8 +99,8 @@
     "version": "v1",
     "config": {
       "prompt_ids": [
-        { "role": "writer", "sort_order": 1, "prompt_version_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5" },
-        { "role": "summarizer", "sort_order": 2, "prompt_version_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J" }
+        { "role": "writer", "sort_order": 1, "prompt_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5" },
+        { "role": "summarizer", "sort_order": 2, "prompt_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J" }
       ]
     },
     "input_schema": {
@@ -121,9 +121,9 @@
     "version": "v1",
     "config": {
       "prompt_ids": [
-        { "role": "researcher", "sort_order": 1, "prompt_version_id": "3A1brO9jKYggsosrVt9i16ek9EZ" },
-        { "role": "critic", "sort_order": 2, "prompt_version_id": "3A1brNB8U4cQSEzvZgkCQzQYqr1" },
-        { "role": "creative-writer", "sort_order": 3, "prompt_version_id": "3A1brQJyswb4AYON6R1hGUqmZwI" }
+        { "role": "researcher", "sort_order": 1, "prompt_id": "3A1brO9jKYggsosrVt9i16ek9EZ" },
+        { "role": "critic", "sort_order": 2, "prompt_id": "3A1brNB8U4cQSEzvZgkCQzQYqr1" },
+        { "role": "creative-writer", "sort_order": 3, "prompt_id": "3A1brQJyswb4AYON6R1hGUqmZwI" }
       ]
     },
     "input_schema": {

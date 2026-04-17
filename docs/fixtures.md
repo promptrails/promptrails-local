@@ -107,7 +107,7 @@ Links agent versions to prompt versions. Required for chain and multi-agent type
   {
     "id": "AVP_KSUID",
     "agent_version_id": "VERSION_KSUID",
-    "prompt_version_id": "PROMPT_VERSION_KSUID",
+    "prompt_id": "PROMPT_VERSION_KSUID",
     "role": "main",
     "sort_order": 0
   }

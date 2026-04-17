@@ -130,14 +130,15 @@ func (h *AgentHandler) CreateVersion(c echo.Context) error {
 		CreatedAt:    time.Now(),
 	}
 
-	// Build prompt associations
+	// Build prompt associations. Links by prompt_id so executions auto-follow
+	// the prompt's current version rather than pinning a specific version.
 	for _, pid := range req.PromptIDs {
 		version.Prompts = append(version.Prompts, model.AgentVersionPrompt{
-			ID:              ksuid.New().String(),
-			AgentVersionID:  version.ID,
-			PromptVersionID: pid.PromptVersionID,
-			Role:            pid.Role,
-			SortOrder:       pid.SortOrder,
+			ID:             ksuid.New().String(),
+			AgentVersionID: version.ID,
+			PromptID:       pid.PromptID,
+			Role:           pid.Role,
+			SortOrder:      pid.SortOrder,
 		})
 	}
 

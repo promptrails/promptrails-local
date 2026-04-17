@@ -2,98 +2,98 @@
   {
     "id": "39zLSfqMtVkwsDDBUer6vAXumqw",
     "agent_version_id": "39zLSdOPgYYxUkvsf7wLsZt0INy",
-    "prompt_version_id": "39zLQJj4ACsXjewoYQmA4uum7aZ",
+    "prompt_id": "39zLGtOC4hhu8jbb2Ytcx0OBlAi",
     "role": "main",
     "sort_order": 0
   },
   {
     "id": "39zMKJPjuvxFTf7ajOj2gouWGWu",
     "agent_version_id": "39zMKMs8hpNbj60BpYLzmM79F3o",
-    "prompt_version_id": "39zMIb3cK5QinbZaG9s30heoPnO",
+    "prompt_id": "39zM7meSZQuSnrPeJSvT46tw13i",
     "role": "main",
     "sort_order": 0
   },
   {
     "id": "3A1of6p2RJqJDBqI0BEDt7cpFbv",
     "agent_version_id": "3A1of7ewdgW5QbX2bhRgm30v7z9",
-    "prompt_version_id": "3A1bXXFiVEeivp9byLGmthHEQat",
+    "prompt_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5",
     "role": "writer",
     "sort_order": 1
   },
   {
     "id": "3A1of8OyolwV9Dt0uItQy1VwqTA",
     "agent_version_id": "3A1of7ewdgW5QbX2bhRgm30v7z9",
-    "prompt_version_id": "3A1babZQzPRK3aPSYeMH5I4Shn2",
+    "prompt_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J",
     "role": "summarizer",
     "sort_order": 2
   },
   {
     "id": "3A1ogBmT0O7V35r4lb1pCPte6q4",
     "agent_version_id": "3A1ogGTmQEXVsCJH3kdnS3qoh12",
-    "prompt_version_id": "3A1bXXFiVEeivp9byLGmthHEQat",
+    "prompt_id": "3A1bVrUPaeYXdjFlinqEIBdIwZ5",
     "role": "writer",
     "sort_order": 1
   },
   {
     "id": "3A1ogHzgrEbwDUNLzG9ZWT0Nc7j",
     "agent_version_id": "3A1ogGTmQEXVsCJH3kdnS3qoh12",
-    "prompt_version_id": "3A1babZQzPRK3aPSYeMH5I4Shn2",
+    "prompt_id": "3A1bZ4XCmtDy84XvWlXfzvpj04J",
     "role": "summarizer",
     "sort_order": 2
   },
   {
     "id": "3A1oiDBTogDx9pxgoKwBIKyiRNh",
     "agent_version_id": "3A1oiHlhtcr86C0YoNLcVbrWyVO",
-    "prompt_version_id": "3A1bwDLHTrbumo4NKNFmc6vtm1h",
+    "prompt_id": "3A1brO9jKYggsosrVt9i16ek9EZ",
     "role": "researcher",
     "sort_order": 1
   },
   {
     "id": "3A1oiCAwADA2XGSTkJRtgfJsuPt",
     "agent_version_id": "3A1oiHlhtcr86C0YoNLcVbrWyVO",
-    "prompt_version_id": "3A1bwAHPlXSn8pj80EygpO7sYMt",
+    "prompt_id": "3A1brNB8U4cQSEzvZgkCQzQYqr1",
     "role": "critic",
     "sort_order": 2
   },
   {
     "id": "3A1oiFeyUnp90ga0f2vjIGNsg7N",
     "agent_version_id": "3A1oiHlhtcr86C0YoNLcVbrWyVO",
-    "prompt_version_id": "3A1bwEnBwB25tiNC5YCb2vmgYZ3",
+    "prompt_id": "3A1brQJyswb4AYON6R1hGUqmZwI",
     "role": "creative-writer",
     "sort_order": 3
   },
   {
     "id": "3A1tlrkNzhHWWaeq1f71BCiGwwb",
     "agent_version_id": "3A1tlyyoVboU3DCSeJdHwJSHFRJ",
-    "prompt_version_id": "3A1tW7LTqpqXjBKDdrWmf9LhKSR",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
     "role": "main",
     "sort_order": 0
   },
   {
     "id": "3A1uCH16CTT05idSdhGAIM1Niam",
     "agent_version_id": "3A1uCGlMyhwNeobtIc80ZL1eSCx",
-    "prompt_version_id": "3A1tW7LTqpqXjBKDdrWmf9LhKSR",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
     "role": "main",
     "sort_order": 0
   },
   {
     "id": "3A1uODaj4GDc4wjwLpppVgBCGmp",
     "agent_version_id": "3A1uOGkuIyOgL1gwrmaSpZFzFEQ",
-    "prompt_version_id": "3A1uLw5IevuIumpzLmsDB10pyae",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
     "role": "main",
     "sort_order": 0
   },
   {
     "id": "3A1uprhdFdVnLXP1JByjBcM0BhF",
     "agent_version_id": "3A1upqALYNXllAc9ezSby1dGu2c",
-    "prompt_version_id": "3A1unemNTVkoPHg84fdQ4MbB7UW",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
     "role": "main",
     "sort_order": 0
   },
   {
     "id": "3A9X625ZtG0Ge4axsTY4kAFST4f",
     "agent_version_id": "3A9X5xDFEnBKusFotcMhUWVPqMG",
-    "prompt_version_id": "3A1unemNTVkoPHg84fdQ4MbB7UW",
+    "prompt_id": "3A1tJOiAtN4DcpD05NT2UzqOAR4",
     "role": "main",
     "sort_order": 0
   }

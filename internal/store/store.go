@@ -283,16 +283,17 @@ func (s *Store) AddAgentVersionPrompt(p model.AgentVersionPrompt) {
 }
 
 // agentVersionPromptsFor returns prompts for a version (must be called under at least RLock).
+// The link is by prompt_id, and the prompt's current version is attached on each
+// read so agents always use the latest published prompt content.
 func (s *Store) agentVersionPromptsFor(versionID string) []model.AgentVersionPrompt {
 	var out []model.AgentVersionPrompt
 	for _, p := range s.agentVersionPrompts {
 		if p.AgentVersionID == versionID {
 			cp := p
-			if pv, ok := s.promptVersions[cp.PromptVersionID]; ok {
-				pvCopy := pv
-				pvCopy.LLMModel = s.llmModelPtr(pvCopy.LLMModelID)
-				pvCopy.FallbackLLMModel = s.llmModelPtr(pvCopy.FallbackLLMModelID)
-				cp.PromptVersion = &pvCopy
+			if prompt, ok := s.prompts[cp.PromptID]; ok {
+				pc := prompt
+				pc.CurrentVersion = s.currentPromptVersion(pc.ID)
+				cp.Prompt = &pc
 			}
 			out = append(out, cp)
 		}

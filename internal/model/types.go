@@ -32,12 +32,12 @@ type AgentVersion struct {
 }
 
 type AgentVersionPrompt struct {
-	ID              string         `json:"id"`
-	AgentVersionID  string         `json:"agent_version_id"`
-	PromptVersionID string         `json:"prompt_version_id"`
-	Role            string         `json:"role"`
-	SortOrder       int            `json:"sort_order"`
-	PromptVersion   *PromptVersion `json:"prompt_version,omitempty"`
+	ID             string  `json:"id"`
+	AgentVersionID string  `json:"agent_version_id"`
+	PromptID       string  `json:"prompt_id"`
+	Role           string  `json:"role"`
+	SortOrder      int     `json:"sort_order"`
+	Prompt         *Prompt `json:"prompt,omitempty"`
 }
 
 type Prompt struct {
@@ -351,9 +351,9 @@ type CreateAgentVersionRequest struct {
 	SetCurrent   bool            `json:"set_current"`
 	Message      string          `json:"message"`
 	PromptIDs    []struct {
-		PromptVersionID string `json:"prompt_version_id"`
-		Role            string `json:"role"`
-		SortOrder       int    `json:"sort_order"`
+		PromptID  string `json:"prompt_id"`
+		Role      string `json:"role"`
+		SortOrder int    `json:"sort_order"`
 	} `json:"prompt_ids"`
 }
 
