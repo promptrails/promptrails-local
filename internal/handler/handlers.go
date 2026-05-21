@@ -13,21 +13,22 @@ import (
 
 // Handlers aggregates all sub-handlers for the emulator.
 type Handlers struct {
-	Agent          *AgentHandler
-	Prompt         *PromptHandler
-	Execution      *ExecutionHandler
-	DataSource     *DataSourceHandler
-	Credential     *CredentialHandler
-	Chat           *ChatHandler
-	Trace          *TraceHandler
-	Score          *ScoreHandler
-	Approval       *ApprovalHandler
-	WebhookTrigger *WebhookTriggerHandler
-	MCPTool        *MCPToolHandler
-	Guardrail      *GuardrailHandler
-	Memory         *MemoryHandler
-	LLMModel       *LLMModelHandler
-	Admin          *AdminHandler
+	Agent        *AgentHandler
+	Prompt       *PromptHandler
+	Execution    *ExecutionHandler
+	DataSource   *DataSourceHandler
+	Credential   *CredentialHandler
+	Chat         *ChatHandler
+	Trace        *TraceHandler
+	Score        *ScoreHandler
+	Approval     *ApprovalHandler
+	AgentTrigger *AgentTriggerHandler
+	AgentVFS     *AgentVFSHandler
+	MCPTool      *MCPToolHandler
+	Guardrail    *GuardrailHandler
+	Memory       *MemoryHandler
+	LLMModel     *LLMModelHandler
+	Admin        *AdminHandler
 
 	version string
 }
@@ -35,22 +36,23 @@ type Handlers struct {
 // New creates all sub-handlers wired to the given store.
 func New(s *store.Store, logger *zap.Logger, version string) *Handlers {
 	return &Handlers{
-		Agent:          &AgentHandler{store: s, logger: logger},
-		Prompt:         &PromptHandler{store: s, logger: logger},
-		Execution:      &ExecutionHandler{store: s},
-		DataSource:     &DataSourceHandler{store: s},
-		Credential:     &CredentialHandler{store: s},
-		Chat:           &ChatHandler{store: s},
-		Trace:          &TraceHandler{store: s},
-		Score:          &ScoreHandler{store: s},
-		Approval:       &ApprovalHandler{store: s},
-		WebhookTrigger: &WebhookTriggerHandler{store: s},
-		MCPTool:        &MCPToolHandler{store: s},
-		Guardrail:      &GuardrailHandler{store: s},
-		Memory:         &MemoryHandler{store: s},
-		LLMModel:       &LLMModelHandler{store: s},
-		Admin:          &AdminHandler{store: s, logger: logger},
-		version:        version,
+		Agent:        &AgentHandler{store: s, logger: logger},
+		Prompt:       &PromptHandler{store: s, logger: logger},
+		Execution:    &ExecutionHandler{store: s},
+		DataSource:   &DataSourceHandler{store: s},
+		Credential:   &CredentialHandler{store: s},
+		Chat:         &ChatHandler{store: s},
+		Trace:        &TraceHandler{store: s},
+		Score:        &ScoreHandler{store: s},
+		Approval:     &ApprovalHandler{store: s},
+		AgentTrigger: &AgentTriggerHandler{store: s},
+		AgentVFS:     &AgentVFSHandler{store: s},
+		MCPTool:      &MCPToolHandler{store: s},
+		Guardrail:    &GuardrailHandler{store: s},
+		Memory:       &MemoryHandler{store: s},
+		LLMModel:     &LLMModelHandler{store: s},
+		Admin:        &AdminHandler{store: s, logger: logger},
+		version:      version,
 	}
 }
 
@@ -158,12 +160,25 @@ func (h *Handlers) DecideApproval(c echo.Context) error { return h.Approval.Deci
 
 // ---------- Webhook Trigger delegations ----------
 
-func (h *Handlers) ListWebhookTriggers(c echo.Context) error  { return h.WebhookTrigger.List(c) }
-func (h *Handlers) CreateWebhookTrigger(c echo.Context) error { return h.WebhookTrigger.Create(c) }
-func (h *Handlers) GetWebhookTrigger(c echo.Context) error    { return h.WebhookTrigger.Get(c) }
-func (h *Handlers) UpdateWebhookTrigger(c echo.Context) error { return h.WebhookTrigger.Update(c) }
-func (h *Handlers) DeleteWebhookTrigger(c echo.Context) error { return h.WebhookTrigger.Delete(c) }
-func (h *Handlers) HookExecute(c echo.Context) error          { return h.WebhookTrigger.Hook(c) }
+func (h *Handlers) ListAgentTriggers(c echo.Context) error  { return h.AgentTrigger.List(c) }
+func (h *Handlers) CreateAgentTrigger(c echo.Context) error { return h.AgentTrigger.Create(c) }
+func (h *Handlers) GetAgentTrigger(c echo.Context) error    { return h.AgentTrigger.Get(c) }
+func (h *Handlers) UpdateAgentTrigger(c echo.Context) error { return h.AgentTrigger.Update(c) }
+func (h *Handlers) DeleteAgentTrigger(c echo.Context) error { return h.AgentTrigger.Delete(c) }
+func (h *Handlers) HookExecute(c echo.Context) error        { return h.AgentTrigger.Hook(c) }
+
+// Agent VFS
+func (h *Handlers) ListAgentVFS(c echo.Context) error   { return h.AgentVFS.List(c) }
+func (h *Handlers) ReadAgentVFS(c echo.Context) error   { return h.AgentVFS.Read(c) }
+func (h *Handlers) StatAgentVFS(c echo.Context) error   { return h.AgentVFS.Stat(c) }
+func (h *Handlers) WriteAgentVFS(c echo.Context) error  { return h.AgentVFS.Write(c) }
+func (h *Handlers) MkdirAgentVFS(c echo.Context) error  { return h.AgentVFS.Mkdir(c) }
+func (h *Handlers) DeleteAgentVFS(c echo.Context) error { return h.AgentVFS.Delete(c) }
+func (h *Handlers) MoveAgentVFS(c echo.Context) error   { return h.AgentVFS.Move(c) }
+func (h *Handlers) CopyAgentVFS(c echo.Context) error   { return h.AgentVFS.Copy(c) }
+func (h *Handlers) GrepAgentVFS(c echo.Context) error   { return h.AgentVFS.Grep(c) }
+func (h *Handlers) GlobAgentVFS(c echo.Context) error   { return h.AgentVFS.Glob(c) }
+func (h *Handlers) UsageAgentVFS(c echo.Context) error  { return h.AgentVFS.Usage(c) }
 
 // ---------- MCP Tool delegations ----------
 

@@ -31,7 +31,7 @@ var OpenAPISpec = `{
     {"name": "Traces", "description": "Execution traces"},
     {"name": "Scores", "description": "Evaluation scores"},
     {"name": "Approvals", "description": "Human-in-the-loop approvals"},
-    {"name": "Webhook Triggers", "description": "Webhook-based agent triggers"},
+    {"name": "Agent Triggers", "description": "Webhook-based agent triggers"},
     {"name": "MCP Tools", "description": "Model Context Protocol tools"},
     {"name": "Guardrails", "description": "Agent guardrails"},
     {"name": "Memories", "description": "Agent memory management"},
@@ -372,17 +372,17 @@ var OpenAPISpec = `{
     "/api/v1/approvals/{approvalId}/decide": {
       "post": {"tags": ["Approvals"], "summary": "Decide approval", "operationId": "decideApproval", "parameters": [{"name": "approvalId", "in": "path", "required": true, "schema": {"type": "string"}}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["decision"], "properties": {"decision": {"type": "string", "enum": ["approved", "rejected"]}, "reason": {"type": "string"}}}}}}, "responses": {"200": {"description": "Decided"}}}
     },
-    "/api/v1/webhook-triggers": {
-      "get": {"tags": ["Webhook Triggers"], "summary": "List triggers", "operationId": "listWebhookTriggers", "responses": {"200": {"description": "List"}}},
-      "post": {"tags": ["Webhook Triggers"], "summary": "Create trigger", "operationId": "createWebhookTrigger", "responses": {"201": {"description": "Created with full token"}}}
+    "/api/v1/triggers": {
+      "get": {"tags": ["Agent Triggers"], "summary": "List triggers", "operationId": "listAgentTriggers", "responses": {"200": {"description": "List"}}},
+      "post": {"tags": ["Agent Triggers"], "summary": "Create trigger", "operationId": "createAgentTrigger", "responses": {"201": {"description": "Created with full token"}}}
     },
-    "/api/v1/webhook-triggers/{triggerId}": {
-      "get": {"tags": ["Webhook Triggers"], "summary": "Get trigger", "operationId": "getWebhookTrigger", "parameters": [{"name": "triggerId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Details"}}},
-      "patch": {"tags": ["Webhook Triggers"], "summary": "Update trigger", "operationId": "updateWebhookTrigger", "parameters": [{"name": "triggerId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Updated"}}},
-      "delete": {"tags": ["Webhook Triggers"], "summary": "Delete trigger", "operationId": "deleteWebhookTrigger", "parameters": [{"name": "triggerId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
+    "/api/v1/triggers/{triggerId}": {
+      "get": {"tags": ["Agent Triggers"], "summary": "Get trigger", "operationId": "getAgentTrigger", "parameters": [{"name": "triggerId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Details"}}},
+      "patch": {"tags": ["Agent Triggers"], "summary": "Update trigger", "operationId": "updateAgentTrigger", "parameters": [{"name": "triggerId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Updated"}}},
+      "delete": {"tags": ["Agent Triggers"], "summary": "Delete trigger", "operationId": "deleteAgentTrigger", "parameters": [{"name": "triggerId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
     },
     "/hooks/{token}": {
-      "post": {"tags": ["Webhook Triggers"], "summary": "Execute agent via webhook", "operationId": "hookExecute", "parameters": [{"name": "token", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"201": {"description": "Execution created"}}}
+      "post": {"tags": ["Agent Triggers"], "summary": "Execute agent via webhook", "operationId": "hookExecute", "parameters": [{"name": "token", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"201": {"description": "Execution created"}}}
     },
     "/api/v1/mcp-tools": {
       "get": {"tags": ["MCP Tools"], "summary": "List MCP tools", "operationId": "listMCPTools", "responses": {"200": {"description": "List"}}},

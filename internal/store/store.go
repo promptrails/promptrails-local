@@ -45,12 +45,15 @@ type Store struct {
 	scores              map[string]model.Score
 	scoreConfigs        map[string]model.ScoreConfig
 	approvals           map[string]model.ApprovalRequest
-	webhookTriggers     map[string]model.WebhookTrigger
+	webhookTriggers     map[string]model.AgentTrigger
 	mcpTools            map[string]model.MCPTool
 	guardrails          map[string]model.Guardrail
 	memories            map[string]model.AgentMemory
 	llmModels           map[string]model.LLMModel
 	mcpTemplates        map[string]model.MCPTemplate
+	// VFS keyed by "agentID|path" — emulator is single-workspace so we
+	// scope on agent only, which keeps lookups O(1) without composite keys.
+	vfsFiles map[string]model.AgentVFSFile
 }
 
 // New creates a new empty Store.
@@ -76,12 +79,13 @@ func (s *Store) initMaps() {
 	s.scores = make(map[string]model.Score)
 	s.scoreConfigs = make(map[string]model.ScoreConfig)
 	s.approvals = make(map[string]model.ApprovalRequest)
-	s.webhookTriggers = make(map[string]model.WebhookTrigger)
+	s.webhookTriggers = make(map[string]model.AgentTrigger)
 	s.mcpTools = make(map[string]model.MCPTool)
 	s.guardrails = make(map[string]model.Guardrail)
 	s.memories = make(map[string]model.AgentMemory)
 	s.llmModels = make(map[string]model.LLMModel)
 	s.mcpTemplates = make(map[string]model.MCPTemplate)
+	s.vfsFiles = make(map[string]model.AgentVFSFile)
 }
 
 // Reset clears all data and re-initialises internal maps.
@@ -96,23 +100,23 @@ func (s *Store) Stats() model.StoreStats {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return model.StoreStats{
-		Agents:          len(s.agents),
-		AgentVersions:   len(s.agentVersions),
-		Prompts:         len(s.prompts),
-		PromptVersions:  len(s.promptVersions),
-		DataSources:     len(s.dataSources),
-		Executions:      len(s.executions),
-		Credentials:     len(s.credentials),
-		ChatSessions:    len(s.chatSessions),
-		Traces:          len(s.traces),
-		Scores:          len(s.scores),
-		ScoreConfigs:    len(s.scoreConfigs),
-		Approvals:       len(s.approvals),
-		WebhookTriggers: len(s.webhookTriggers),
-		MCPTools:        len(s.mcpTools),
-		Guardrails:      len(s.guardrails),
-		Memories:        len(s.memories),
-		LLMModels:       len(s.llmModels),
+		Agents:         len(s.agents),
+		AgentVersions:  len(s.agentVersions),
+		Prompts:        len(s.prompts),
+		PromptVersions: len(s.promptVersions),
+		DataSources:    len(s.dataSources),
+		Executions:     len(s.executions),
+		Credentials:    len(s.credentials),
+		ChatSessions:   len(s.chatSessions),
+		Traces:         len(s.traces),
+		Scores:         len(s.scores),
+		ScoreConfigs:   len(s.scoreConfigs),
+		Approvals:      len(s.approvals),
+		AgentTriggers:  len(s.webhookTriggers),
+		MCPTools:       len(s.mcpTools),
+		Guardrails:     len(s.guardrails),
+		Memories:       len(s.memories),
+		LLMModels:      len(s.llmModels),
 	}
 }
 
@@ -974,18 +978,18 @@ func (s *Store) ListApprovals(page, limit int) ([]model.ApprovalRequest, int) {
 }
 
 // ============================================================
-// Webhook Triggers
+// Agent Triggers
 // ============================================================
 
-// CreateWebhookTrigger inserts a new webhook trigger.
-func (s *Store) CreateWebhookTrigger(wt model.WebhookTrigger) {
+// CreateAgentTrigger inserts a new agent trigger.
+func (s *Store) CreateAgentTrigger(wt model.AgentTrigger) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.webhookTriggers[wt.ID] = wt
 }
 
-// GetWebhookTrigger returns a webhook trigger by ID.
-func (s *Store) GetWebhookTrigger(id string) (model.WebhookTrigger, bool) {
+// GetAgentTrigger returns a agent trigger by ID.
+func (s *Store) GetAgentTrigger(id string) (model.AgentTrigger, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	wt, ok := s.webhookTriggers[id]
@@ -997,8 +1001,8 @@ func (s *Store) GetWebhookTrigger(id string) (model.WebhookTrigger, bool) {
 	return wt, ok
 }
 
-// GetWebhookTriggerByToken returns a webhook trigger by its token.
-func (s *Store) GetWebhookTriggerByToken(token string) (model.WebhookTrigger, bool) {
+// GetAgentTriggerByToken returns a agent trigger by its token.
+func (s *Store) GetAgentTriggerByToken(token string) (model.AgentTrigger, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, wt := range s.webhookTriggers {
@@ -1009,18 +1013,18 @@ func (s *Store) GetWebhookTriggerByToken(token string) (model.WebhookTrigger, bo
 			return wt, true
 		}
 	}
-	return model.WebhookTrigger{}, false
+	return model.AgentTrigger{}, false
 }
 
-// UpdateWebhookTrigger replaces a webhook trigger in place.
-func (s *Store) UpdateWebhookTrigger(wt model.WebhookTrigger) {
+// UpdateAgentTrigger replaces a agent trigger in place.
+func (s *Store) UpdateAgentTrigger(wt model.AgentTrigger) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.webhookTriggers[wt.ID] = wt
 }
 
-// DeleteWebhookTrigger removes a webhook trigger and returns whether it existed.
-func (s *Store) DeleteWebhookTrigger(id string) bool {
+// DeleteAgentTrigger removes a agent trigger and returns whether it existed.
+func (s *Store) DeleteAgentTrigger(id string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, ok := s.webhookTriggers[id]; !ok {
@@ -1030,12 +1034,12 @@ func (s *Store) DeleteWebhookTrigger(id string) bool {
 	return true
 }
 
-// ListWebhookTriggers returns a paginated list of all webhook triggers.
-func (s *Store) ListWebhookTriggers(page, limit int) ([]model.WebhookTrigger, int) {
+// ListAgentTriggers returns a paginated list of all agent triggers.
+func (s *Store) ListAgentTriggers(page, limit int) ([]model.AgentTrigger, int) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var all []model.WebhookTrigger
+	var all []model.AgentTrigger
 	for _, wt := range s.webhookTriggers {
 		if a, ok := s.agents[wt.AgentID]; ok {
 			wt.Agent = &a
@@ -1315,6 +1319,88 @@ func (s *Store) llmModelPtr(id *string) *model.LLMModel {
 		return &m
 	}
 	return nil
+}
+
+// ============================================================
+// Agent VFS — per-agent virtual filesystem
+// ============================================================
+
+func vfsKey(agentID, path string) string { return agentID + "|" + path }
+
+// VFSGet returns the entry for a path, or false when missing.
+func (s *Store) VFSGet(agentID, path string) (model.AgentVFSFile, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	f, ok := s.vfsFiles[vfsKey(agentID, path)]
+	return f, ok
+}
+
+// VFSList returns the immediate or recursive children of parentPath.
+func (s *Store) VFSList(agentID, parentPath string, recursive bool) []model.AgentVFSFile {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	keyPrefix := agentID + "|"
+	out := []model.AgentVFSFile{}
+	for k, f := range s.vfsFiles {
+		if !strings.HasPrefix(k, keyPrefix) {
+			continue
+		}
+		if recursive {
+			if parentPath == "/" || f.Path == parentPath || strings.HasPrefix(f.Path, parentPath+"/") {
+				out = append(out, f)
+			}
+		} else if f.ParentPath == parentPath {
+			out = append(out, f)
+		}
+	}
+	return out
+}
+
+// VFSUpsert inserts or replaces an entry by (agent, path).
+func (s *Store) VFSUpsert(f model.AgentVFSFile) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if existing, ok := s.vfsFiles[vfsKey(f.AgentID, f.Path)]; ok {
+		f.ID = existing.ID
+		f.CreatedAt = existing.CreatedAt
+	}
+	s.vfsFiles[vfsKey(f.AgentID, f.Path)] = f
+}
+
+// VFSDelete removes a single entry. With recursive=true, removes the
+// subtree rooted at path. Returns the number of rows removed.
+func (s *Store) VFSDelete(agentID, path string, recursive bool) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	deleted := 0
+	for k, f := range s.vfsFiles {
+		if f.AgentID != agentID {
+			continue
+		}
+		if recursive {
+			if f.Path == path || strings.HasPrefix(f.Path, path+"/") {
+				delete(s.vfsFiles, k)
+				deleted++
+			}
+		} else if f.Path == path {
+			delete(s.vfsFiles, k)
+			deleted++
+		}
+	}
+	return deleted
+}
+
+// VFSUsageBytes sums the size of every file (not directory) for an agent.
+func (s *Store) VFSUsageBytes(agentID string) int64 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var total int64
+	for _, f := range s.vfsFiles {
+		if f.AgentID == agentID && !f.IsDir {
+			total += f.SizeBytes
+		}
+	}
+	return total
 }
 
 // ============================================================

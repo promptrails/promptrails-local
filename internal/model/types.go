@@ -239,18 +239,39 @@ type ApprovalRequest struct {
 	CreatedAt      time.Time       `json:"created_at"`
 }
 
-type WebhookTrigger struct {
-	ID          string     `json:"id"`
-	WorkspaceID string     `json:"workspace_id"`
-	AgentID     string     `json:"agent_id"`
-	Name        string     `json:"name"`
-	Token       string     `json:"-"`
-	TokenPrefix string     `json:"token_prefix"`
-	IsActive    bool       `json:"is_active"`
-	LastUsedAt  *time.Time `json:"last_used_at"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	Agent       *Agent     `json:"agent,omitempty"`
+type AgentTrigger struct {
+	ID           string                 `json:"id"`
+	WorkspaceID  string                 `json:"workspace_id"`
+	AgentID      string                 `json:"agent_id"`
+	Name         string                 `json:"name"`
+	Token        string                 `json:"-"`
+	TokenPrefix  string                 `json:"token_prefix"`
+	Source       string                 `json:"source"`
+	SourceConfig map[string]interface{} `json:"source_config,omitempty"`
+	ReplyConfig  map[string]interface{} `json:"reply_config,omitempty"`
+	IsActive     bool                   `json:"is_active"`
+	LastUsedAt   *time.Time             `json:"last_used_at"`
+	CreatedAt    time.Time              `json:"created_at"`
+	UpdatedAt    time.Time              `json:"updated_at"`
+	Agent        *Agent                 `json:"agent,omitempty"`
+}
+
+// AgentVFSFile is a single entry in an agent's Virtual Filesystem.
+type AgentVFSFile struct {
+	ID             string                 `json:"id"`
+	WorkspaceID    string                 `json:"workspace_id"`
+	AgentID        string                 `json:"agent_id"`
+	Path           string                 `json:"path"`
+	ParentPath     string                 `json:"parent_path"`
+	Name           string                 `json:"name"`
+	IsDir          bool                   `json:"is_dir"`
+	Content        string                 `json:"content,omitempty"`
+	SizeBytes      int64                  `json:"size_bytes"`
+	MimeType       string                 `json:"mime_type,omitempty"`
+	Metadata       map[string]interface{} `json:"metadata,omitempty"`
+	LastWriterKind string                 `json:"last_writer_kind"`
+	CreatedAt      time.Time              `json:"created_at"`
+	UpdatedAt      time.Time              `json:"updated_at"`
 }
 
 type MCPTool struct {
@@ -529,15 +550,22 @@ type DecideApprovalRequest struct {
 	Reason   string `json:"reason"`
 }
 
-type CreateWebhookTriggerRequest struct {
-	AgentID  string `json:"agent_id"`
-	Name     string `json:"name"`
-	IsActive bool   `json:"is_active"`
+type CreateAgentTriggerRequest struct {
+	AgentID        string                 `json:"agent_id"`
+	Name           string                 `json:"name"`
+	Source         string                 `json:"source,omitempty"`
+	SourceConfig   map[string]interface{} `json:"source_config,omitempty"`
+	ReplyConfig    map[string]interface{} `json:"reply_config,omitempty"`
+	GenerateSecret bool                   `json:"generate_secret,omitempty"`
+	IsActive       bool                   `json:"is_active"`
 }
 
-type UpdateWebhookTriggerRequest struct {
-	Name     *string `json:"name,omitempty"`
-	IsActive *bool   `json:"is_active,omitempty"`
+type UpdateAgentTriggerRequest struct {
+	Name         *string                `json:"name,omitempty"`
+	IsActive     *bool                  `json:"is_active,omitempty"`
+	Source       *string                `json:"source,omitempty"`
+	SourceConfig map[string]interface{} `json:"source_config,omitempty"`
+	ReplyConfig  map[string]interface{} `json:"reply_config,omitempty"`
 }
 
 type CreateMCPToolRequest struct {
@@ -612,27 +640,27 @@ type ErrorResponse struct {
 	Error ErrorDetail `json:"error"`
 }
 
-type WebhookTriggerCreateResponse struct {
-	WebhookTrigger
+type AgentTriggerCreateResponse struct {
+	AgentTrigger
 	FullToken string `json:"token"`
 }
 
 type StoreStats struct {
-	Agents          int `json:"agents"`
-	AgentVersions   int `json:"agent_versions"`
-	Prompts         int `json:"prompts"`
-	PromptVersions  int `json:"prompt_versions"`
-	DataSources     int `json:"data_sources"`
-	Executions      int `json:"executions"`
-	Credentials     int `json:"credentials"`
-	ChatSessions    int `json:"chat_sessions"`
-	Traces          int `json:"traces"`
-	Scores          int `json:"scores"`
-	ScoreConfigs    int `json:"score_configs"`
-	Approvals       int `json:"approvals"`
-	WebhookTriggers int `json:"webhook_triggers"`
-	MCPTools        int `json:"mcp_tools"`
-	Guardrails      int `json:"guardrails"`
-	Memories        int `json:"memories"`
-	LLMModels       int `json:"llm_models"`
+	Agents         int `json:"agents"`
+	AgentVersions  int `json:"agent_versions"`
+	Prompts        int `json:"prompts"`
+	PromptVersions int `json:"prompt_versions"`
+	DataSources    int `json:"data_sources"`
+	Executions     int `json:"executions"`
+	Credentials    int `json:"credentials"`
+	ChatSessions   int `json:"chat_sessions"`
+	Traces         int `json:"traces"`
+	Scores         int `json:"scores"`
+	ScoreConfigs   int `json:"score_configs"`
+	Approvals      int `json:"approvals"`
+	AgentTriggers  int `json:"agent_triggers"`
+	MCPTools       int `json:"mcp_tools"`
+	Guardrails     int `json:"guardrails"`
+	Memories       int `json:"memories"`
+	LLMModels      int `json:"llm_models"`
 }

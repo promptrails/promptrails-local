@@ -106,16 +106,44 @@ For the interactive API reference with try-it-out functionality, visit **http://
 | `GET` | `/approvals/:approvalId` | Get approval |
 | `POST` | `/approvals/:approvalId/decide` | Approve or reject (`{"decision": "approved"}`) |
 
-## Webhook Triggers
+## Agent Triggers
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/webhook-triggers` | List triggers |
-| `POST` | `/webhook-triggers` | Create trigger (returns full token once) |
-| `GET` | `/webhook-triggers/:triggerId` | Get trigger |
-| `PATCH` | `/webhook-triggers/:triggerId` | Update trigger |
-| `DELETE` | `/webhook-triggers/:triggerId` | Delete trigger |
-| `POST` | `/hooks/:token` | Execute agent via webhook (public, no auth) |
+| `GET` | `/triggers` | List triggers |
+| `POST` | `/triggers` | Create trigger; accepts `source` (`generic` / `slack` / `telegram` / `whatsapp` / `teams` / `schedule`), `source_config`, `reply_config` |
+| `GET` | `/triggers/:triggerId` | Get trigger |
+| `PATCH` | `/triggers/:triggerId` | Update trigger |
+| `DELETE` | `/triggers/:triggerId` | Delete trigger |
+
+### Public inbound endpoints (no auth)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/hooks/:token` | Generic webhook trigger |
+| `POST` | `/api/v1/hooks/:token` | Generic webhook trigger (versioned path) |
+| `POST` | `/api/v1/hooks/slack/:token` | Slack Events API |
+| `POST` | `/api/v1/hooks/telegram/:token` | Telegram bot update |
+| `POST` | `/api/v1/hooks/teams/:token` | Microsoft Teams message |
+| `POST` `GET` | `/api/v1/hooks/whatsapp/:token` | WhatsApp Cloud API (POST for updates, GET for verify) |
+
+The emulator dispatches every source uniformly — signature verification and channel-specific reply behavior are platform-only.
+
+## Agent Virtual Filesystem
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/agents/:agentId/vfs` | List directory entries (query: `path`, `recursive`) |
+| `GET` | `/agents/:agentId/vfs/file` | Read file content (query: `path`) |
+| `PUT` | `/agents/:agentId/vfs/file` | Write file (`path`, `content`, `mode=overwrite|append`) |
+| `GET` | `/agents/:agentId/vfs/stat` | Metadata for a single path |
+| `POST` | `/agents/:agentId/vfs/mkdir` | Create directory (parents auto-created) |
+| `POST` | `/agents/:agentId/vfs/move` | Rename or move (`from`, `to`) |
+| `POST` | `/agents/:agentId/vfs/copy` | Copy file or subtree |
+| `DELETE` | `/agents/:agentId/vfs` | Delete (query: `path`, `recursive`) |
+| `GET` | `/agents/:agentId/vfs/grep` | Content search (query: `q`, `path`, `limit`) |
+| `GET` | `/agents/:agentId/vfs/glob` | Name/path pattern search (query: `pattern`, `path`) |
+| `GET` | `/agents/:agentId/vfs/usage` | Total bytes used by this agent |
 
 ## MCP Tools
 

@@ -66,8 +66,17 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 	e.POST("/admin/seed", h.AdminSeed)
 	e.GET("/admin/store/stats", h.AdminStats)
 
-	// Webhook hooks (no workspace middleware)
+	// Public trigger inbound endpoints (no auth — token in URL is the auth).
+	// The emulator accepts all six sources but treats them uniformly: the
+	// body is dispatched to the bound agent. Signature verification and
+	// channel-specific reply behavior are platform-only.
 	e.POST("/hooks/:token", h.HookExecute)
+	e.POST("/api/v1/hooks/:token", h.HookExecute)
+	e.POST("/api/v1/hooks/slack/:token", h.HookExecute)
+	e.POST("/api/v1/hooks/telegram/:token", h.HookExecute)
+	e.POST("/api/v1/hooks/teams/:token", h.HookExecute)
+	e.POST("/api/v1/hooks/whatsapp/:token", h.HookExecute)
+	e.GET("/api/v1/hooks/whatsapp/:token", h.HookExecute) // verify handshake
 
 	// API v1 routes
 	api := e.Group("/api/v1")
@@ -149,12 +158,25 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 	api.GET("/approvals/:approvalId", h.GetApproval)
 	api.POST("/approvals/:approvalId/decide", h.DecideApproval)
 
-	// Webhook Triggers
-	api.GET("/webhook-triggers", h.ListWebhookTriggers)
-	api.POST("/webhook-triggers", h.CreateWebhookTrigger)
-	api.GET("/webhook-triggers/:triggerId", h.GetWebhookTrigger)
-	api.PATCH("/webhook-triggers/:triggerId", h.UpdateWebhookTrigger)
-	api.DELETE("/webhook-triggers/:triggerId", h.DeleteWebhookTrigger)
+	// Agent Triggers
+	api.GET("/triggers", h.ListAgentTriggers)
+	api.POST("/triggers", h.CreateAgentTrigger)
+	api.GET("/triggers/:triggerId", h.GetAgentTrigger)
+	api.PATCH("/triggers/:triggerId", h.UpdateAgentTrigger)
+	api.DELETE("/triggers/:triggerId", h.DeleteAgentTrigger)
+
+	// Agent Virtual Filesystem
+	api.GET("/agents/:agentId/vfs", h.ListAgentVFS)
+	api.GET("/agents/:agentId/vfs/file", h.ReadAgentVFS)
+	api.PUT("/agents/:agentId/vfs/file", h.WriteAgentVFS)
+	api.GET("/agents/:agentId/vfs/stat", h.StatAgentVFS)
+	api.POST("/agents/:agentId/vfs/mkdir", h.MkdirAgentVFS)
+	api.DELETE("/agents/:agentId/vfs", h.DeleteAgentVFS)
+	api.POST("/agents/:agentId/vfs/move", h.MoveAgentVFS)
+	api.POST("/agents/:agentId/vfs/copy", h.CopyAgentVFS)
+	api.GET("/agents/:agentId/vfs/grep", h.GrepAgentVFS)
+	api.GET("/agents/:agentId/vfs/glob", h.GlobAgentVFS)
+	api.GET("/agents/:agentId/vfs/usage", h.UsageAgentVFS)
 
 	// MCP Tools
 	api.GET("/mcp-tools", h.ListMCPTools)

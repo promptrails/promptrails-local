@@ -12,19 +12,19 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-type WebhookTriggerHandler struct {
+type AgentTriggerHandler struct {
 	store *store.Store
 }
 
-func (h *WebhookTriggerHandler) List(c echo.Context) error {
+func (h *AgentTriggerHandler) List(c echo.Context) error {
 	p := getPagination(c)
-	triggers, total := h.store.ListWebhookTriggers(p.Page, p.Limit)
+	triggers, total := h.store.ListAgentTriggers(p.Page, p.Limit)
 	return listResponse(c, triggers, total, p)
 }
 
-func (h *WebhookTriggerHandler) Create(c echo.Context) error {
+func (h *AgentTriggerHandler) Create(c echo.Context) error {
 	wid := getWorkspaceID()
-	var req model.CreateWebhookTriggerRequest
+	var req model.CreateAgentTriggerRequest
 	if err := c.Bind(&req); err != nil {
 		return badRequest(c, "invalid request body")
 	}
@@ -34,43 +34,50 @@ func (h *WebhookTriggerHandler) Create(c echo.Context) error {
 
 	token := ksuid.New().String()
 	now := time.Now()
-
-	trigger := model.WebhookTrigger{
-		ID:          ksuid.New().String(),
-		WorkspaceID: wid,
-		AgentID:     req.AgentID,
-		Name:        req.Name,
-		Token:       token,
-		TokenPrefix: token[:8],
-		IsActive:    req.IsActive,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+	source := req.Source
+	if source == "" {
+		source = "generic"
 	}
-	h.store.CreateWebhookTrigger(trigger)
+
+	trigger := model.AgentTrigger{
+		ID:           ksuid.New().String(),
+		WorkspaceID:  wid,
+		AgentID:      req.AgentID,
+		Name:         req.Name,
+		Token:        token,
+		TokenPrefix:  token[:8],
+		Source:       source,
+		SourceConfig: req.SourceConfig,
+		ReplyConfig:  req.ReplyConfig,
+		IsActive:     req.IsActive,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+	h.store.CreateAgentTrigger(trigger)
 
 	// Return the full token only on creation
-	resp := model.WebhookTriggerCreateResponse{
-		WebhookTrigger: trigger,
-		FullToken:      token,
+	resp := model.AgentTriggerCreateResponse{
+		AgentTrigger: trigger,
+		FullToken:    token,
 	}
 	return dataResponse(c, http.StatusCreated, resp)
 }
 
-func (h *WebhookTriggerHandler) Get(c echo.Context) error {
-	trigger, ok := h.store.GetWebhookTrigger(c.Param("triggerId"))
+func (h *AgentTriggerHandler) Get(c echo.Context) error {
+	trigger, ok := h.store.GetAgentTrigger(c.Param("triggerId"))
 	if !ok {
-		return notFound(c, "webhook trigger not found")
+		return notFound(c, "agent trigger not found")
 	}
 	return dataResponse(c, http.StatusOK, trigger)
 }
 
-func (h *WebhookTriggerHandler) Update(c echo.Context) error {
-	trigger, ok := h.store.GetWebhookTrigger(c.Param("triggerId"))
+func (h *AgentTriggerHandler) Update(c echo.Context) error {
+	trigger, ok := h.store.GetAgentTrigger(c.Param("triggerId"))
 	if !ok {
-		return notFound(c, "webhook trigger not found")
+		return notFound(c, "agent trigger not found")
 	}
 
-	var req model.UpdateWebhookTriggerRequest
+	var req model.UpdateAgentTriggerRequest
 	if err := c.Bind(&req); err != nil {
 		return badRequest(c, "invalid request body")
 	}
@@ -81,29 +88,38 @@ func (h *WebhookTriggerHandler) Update(c echo.Context) error {
 	if req.IsActive != nil {
 		trigger.IsActive = *req.IsActive
 	}
+	if req.Source != nil {
+		trigger.Source = *req.Source
+	}
+	if req.SourceConfig != nil {
+		trigger.SourceConfig = req.SourceConfig
+	}
+	if req.ReplyConfig != nil {
+		trigger.ReplyConfig = req.ReplyConfig
+	}
 	trigger.UpdatedAt = time.Now()
 
-	h.store.UpdateWebhookTrigger(trigger)
+	h.store.UpdateAgentTrigger(trigger)
 	return dataResponse(c, http.StatusOK, trigger)
 }
 
-func (h *WebhookTriggerHandler) Delete(c echo.Context) error {
-	if !h.store.DeleteWebhookTrigger(c.Param("triggerId")) {
-		return notFound(c, "webhook trigger not found")
+func (h *AgentTriggerHandler) Delete(c echo.Context) error {
+	if !h.store.DeleteAgentTrigger(c.Param("triggerId")) {
+		return notFound(c, "agent trigger not found")
 	}
 	return c.NoContent(http.StatusNoContent)
 }
 
 // Hook is the public endpoint that receives webhook calls and executes the agent.
-func (h *WebhookTriggerHandler) Hook(c echo.Context) error {
+func (h *AgentTriggerHandler) Hook(c echo.Context) error {
 	token := c.Param("token")
-	trigger, ok := h.store.GetWebhookTriggerByToken(token)
+	trigger, ok := h.store.GetAgentTriggerByToken(token)
 	if !ok {
 		return notFound(c, "invalid webhook token")
 	}
 
 	if !trigger.IsActive {
-		return badRequest(c, "webhook trigger is disabled")
+		return badRequest(c, "agent trigger is disabled")
 	}
 
 	// Parse incoming body as input
@@ -144,7 +160,7 @@ func (h *WebhookTriggerHandler) Hook(c echo.Context) error {
 
 	// Update last used timestamp
 	trigger.LastUsedAt = &now
-	h.store.UpdateWebhookTrigger(trigger)
+	h.store.UpdateAgentTrigger(trigger)
 
 	return dataResponse(c, http.StatusCreated, execution)
 }
