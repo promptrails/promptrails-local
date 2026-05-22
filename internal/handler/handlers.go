@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"math"
 	"net/http"
 	"strconv"
@@ -268,4 +269,25 @@ func badRequest(c echo.Context, msg string) error {
 	return c.JSON(http.StatusBadRequest, model.ErrorResponse{
 		Error: model.ErrorDetail{Code: "bad_request", Message: msg},
 	})
+}
+
+// applyMaskingEnabled implements the tri-state semantics the real API
+// uses for `masking_enabled` on PATCH endpoints: omitted leaves the
+// current value alone, JSON null clears the override (back to inherit),
+// true/false sets the explicit override. Returns true when the field
+// was present so callers can short-circuit no-op updates.
+func applyMaskingEnabled(raw json.RawMessage, target **bool) bool {
+	if len(raw) == 0 {
+		return false
+	}
+	if string(raw) == "null" {
+		*target = nil
+		return true
+	}
+	var b bool
+	if err := json.Unmarshal(raw, &b); err != nil {
+		return false
+	}
+	*target = &b
+	return true
 }

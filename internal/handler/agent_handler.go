@@ -85,6 +85,7 @@ func (h *AgentHandler) Update(c echo.Context) error {
 	if req.Status != nil {
 		agent.Status = *req.Status
 	}
+	applyMaskingEnabled(req.MaskingEnabled, &agent.MaskingEnabled)
 	agent.UpdatedAt = time.Now()
 
 	h.store.UpdateAgent(agent)

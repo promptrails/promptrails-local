@@ -6,16 +6,20 @@ import (
 )
 
 type Agent struct {
-	ID             string          `json:"id"`
-	WorkspaceID    string          `json:"workspace_id"`
-	Name           string          `json:"name"`
-	Description    string          `json:"description"`
-	Type           string          `json:"type"`
-	Status         string          `json:"status"`
-	Labels         json.RawMessage `json:"labels"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
-	CurrentVersion *AgentVersion   `json:"current_version,omitempty"`
+	ID          string          `json:"id"`
+	WorkspaceID string          `json:"workspace_id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Type        string          `json:"type"`
+	Status      string          `json:"status"`
+	Labels      json.RawMessage `json:"labels"`
+	// MaskingEnabled overrides the workspace PII masking policy for this
+	// agent. nil = inherit; true/false = explicit override. Matches the
+	// shape served by the real API.
+	MaskingEnabled *bool         `json:"masking_enabled,omitempty"`
+	CreatedAt      time.Time     `json:"created_at"`
+	UpdatedAt      time.Time     `json:"updated_at"`
+	CurrentVersion *AgentVersion `json:"current_version,omitempty"`
 }
 
 type AgentVersion struct {
@@ -74,14 +78,22 @@ type PromptVersion struct {
 }
 
 type DataSource struct {
-	ID          string    `json:"id"`
-	WorkspaceID string    `json:"workspace_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description,omitempty"`
-	Type        string    `json:"type"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string `json:"id"`
+	WorkspaceID string `json:"workspace_id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Type        string `json:"type"`
+	Status      string `json:"status"`
+	// MaskingEnabled overrides the workspace PII masking policy for data
+	// flowing out of this source. nil = inherit; true/false = explicit.
+	MaskingEnabled *bool `json:"masking_enabled,omitempty"`
+	// MaskingRules carries the per-field always/never masking overrides
+	// for columns returned by this source. Stored verbatim so the
+	// emulator round-trips whatever shape the real API expects without
+	// re-implementing the validation.
+	MaskingRules json.RawMessage `json:"masking_rules,omitempty"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
 }
 
 type DataSourceVersion struct {
@@ -362,6 +374,11 @@ type UpdateAgentRequest struct {
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
 	Status      *string `json:"status,omitempty"`
+	// MaskingEnabled is tri-state: omitted = leave unchanged, JSON null
+	// = clear the override (back to inherit), true/false = set. Stored as
+	// json.RawMessage because Go's encoding/json collapses "field
+	// omitted" and "explicit null" into the same nil for *bool.
+	MaskingEnabled json.RawMessage `json:"masking_enabled,omitempty"`
 }
 
 type CreateAgentVersionRequest struct {
@@ -458,6 +475,11 @@ type UpdateDataSourceRequest struct {
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
 	Status      *string `json:"status,omitempty"`
+	// MaskingEnabled tri-state — see UpdateAgentRequest.MaskingEnabled.
+	MaskingEnabled json.RawMessage `json:"masking_enabled,omitempty"`
+	// MaskingRules carries per-field always/never overrides; stored
+	// verbatim by the emulator.
+	MaskingRules json.RawMessage `json:"masking_rules,omitempty"`
 }
 
 type CreateDataSourceVersionRequest struct {

@@ -72,6 +72,10 @@ func (h *DataSourceHandler) Update(c echo.Context) error {
 	if req.Status != nil {
 		ds.Status = *req.Status
 	}
+	applyMaskingEnabled(req.MaskingEnabled, &ds.MaskingEnabled)
+	if len(req.MaskingRules) > 0 {
+		ds.MaskingRules = req.MaskingRules
+	}
 	ds.UpdatedAt = time.Now()
 
 	h.store.UpdateDataSource(ds)
