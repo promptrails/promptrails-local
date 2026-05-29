@@ -1,6 +1,6 @@
 module github.com/promptrails/promptrails-local
 
-go 1.26.0
+go 1.26.3
 
 require (
 	github.com/labstack/echo/v4 v4.13.3
