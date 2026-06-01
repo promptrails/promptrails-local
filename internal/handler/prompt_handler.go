@@ -163,7 +163,7 @@ func (h *PromptHandler) Preview(c echo.Context) error {
 		return badRequest(c, "invalid request body")
 	}
 
-	result := fake.GeneratePromptRunResponse(prompt.Name)
+	result := fake.GeneratePromptRunResponse(prompt.Name, nil)
 	return dataResponse(c, http.StatusOK, result)
 }
 
@@ -179,6 +179,6 @@ func (h *PromptHandler) Run(c echo.Context) error {
 		return badRequest(c, "invalid request body")
 	}
 
-	result := fake.GeneratePromptRunResponse(prompt.Name)
+	result := fake.GeneratePromptRunResponse(prompt.Name, &req)
 	return dataResponse(c, http.StatusOK, result)
 }

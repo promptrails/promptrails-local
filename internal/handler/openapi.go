@@ -420,7 +420,10 @@ var OpenAPISpec = `{
       "delete": {"tags": ["Memories"], "summary": "Delete memory", "operationId": "deleteMemory", "parameters": [{"name": "memoryId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
     },
     "/api/v1/llm-models": {
-      "get": {"tags": ["LLM Models"], "summary": "List available LLM models", "operationId": "listLLMModels", "responses": {"200": {"description": "List of models"}}}
+      "get": {"tags": ["LLM Models"], "summary": "List LLM models", "operationId": "listLLMModels", "responses": {"200": {"description": "List of models"}}}
+    },
+    "/api/v1/llm-models/available": {
+      "get": {"tags": ["LLM Models"], "summary": "List available LLM models grouped by provider", "operationId": "listAvailableLLMModels", "responses": {"200": {"description": "Models grouped by provider"}}}
     },
     "/admin/reset": {
       "post": {"tags": ["Admin"], "summary": "Reset all data and reload seed", "operationId": "adminReset", "responses": {"200": {"description": "Reset complete"}}}

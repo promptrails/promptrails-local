@@ -211,6 +211,8 @@ func (h *Handlers) DeleteAllMemories(c echo.Context) error { return h.Memory.Del
 
 func (h *Handlers) ListLLMModels(c echo.Context) error { return h.LLMModel.List(c) }
 
+func (h *Handlers) ListAvailableLLMModels(c echo.Context) error { return h.LLMModel.ListAvailable(c) }
+
 // ---------- helpers ----------
 
 // getWorkspaceID returns a constant workspace ID used when creating new resources

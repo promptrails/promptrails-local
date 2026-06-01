@@ -331,20 +331,56 @@ type AgentMemory struct {
 }
 
 type LLMModel struct {
-	ID                string    `json:"id"`
-	Provider          string    `json:"provider"`
-	ModelID           string    `json:"model_id"`
-	DisplayName       string    `json:"display_name"`
-	InputPrice        *float64  `json:"input_price"`
-	OutputPrice       *float64  `json:"output_price"`
-	MaxTokens         *int      `json:"max_tokens"`
-	SupportsVision    bool      `json:"supports_vision"`
-	SupportsTools     bool      `json:"supports_tools"`
-	SupportsJSON      bool      `json:"supports_json"`
-	SupportsStreaming bool      `json:"supports_streaming"`
-	IsActive          bool      `json:"is_active"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                    string     `json:"id"`
+	Provider              string     `json:"provider"`
+	ModelID               string     `json:"model_id"`
+	DisplayName           string     `json:"display_name"`
+	InputPrice            *float64   `json:"input_price"`
+	OutputPrice           *float64   `json:"output_price"`
+	CachedInputPrice      *float64   `json:"cached_input_price"`
+	MaxTokens             *int       `json:"max_tokens"`
+	SupportsVision        bool       `json:"supports_vision"`
+	SupportsTools         bool       `json:"supports_tools"`
+	SupportsJSON          bool       `json:"supports_json"`
+	SupportsStreaming     bool       `json:"supports_streaming"`
+	SupportsTemperature   bool       `json:"supports_temperature"`
+	SupportsTopP          bool       `json:"supports_top_p"`
+	SupportsTopK          bool       `json:"supports_top_k"`
+	SupportsReasoning     bool       `json:"supports_reasoning"`
+	SupportsWebSearch     bool       `json:"supports_web_search"`
+	SupportsPromptCaching bool       `json:"supports_prompt_caching"`
+	IsActive              bool       `json:"is_active"`
+	IsDeprecated          bool       `json:"is_deprecated"`
+	DeprecatedAt          *time.Time `json:"deprecated_at"`
+	CreatedAt             time.Time  `json:"created_at"`
+	UpdatedAt             time.Time  `json:"updated_at"`
+}
+
+// AvailableModelEntry is one model in the available-models response, grouped
+// by provider.
+type AvailableModelEntry struct {
+	ID                    string   `json:"id"`
+	ModelID               string   `json:"model_id"`
+	DisplayName           string   `json:"display_name"`
+	MaxTokens             *int     `json:"max_tokens"`
+	SupportsVision        bool     `json:"supports_vision"`
+	SupportsTools         bool     `json:"supports_tools"`
+	SupportsJSON          bool     `json:"supports_json"`
+	SupportsTemperature   bool     `json:"supports_temperature"`
+	SupportsTopP          bool     `json:"supports_top_p"`
+	SupportsTopK          bool     `json:"supports_top_k"`
+	SupportsReasoning     bool     `json:"supports_reasoning"`
+	SupportsWebSearch     bool     `json:"supports_web_search"`
+	SupportsPromptCaching bool     `json:"supports_prompt_caching"`
+	InputPrice            *float64 `json:"input_price"`
+	OutputPrice           *float64 `json:"output_price"`
+	IsDeprecated          bool     `json:"is_deprecated"`
+}
+
+// AvailableModelGroup groups available models by provider.
+type AvailableModelGroup struct {
+	Provider string                `json:"provider"`
+	Models   []AvailableModelEntry `json:"models"`
 }
 
 type MCPTemplate struct {
@@ -450,11 +486,15 @@ type RunPromptRequest struct {
 	Temperature        *float64        `json:"temperature"`
 	MaxTokens          *int            `json:"max_tokens"`
 	TopP               *float64        `json:"top_p"`
+	TopK               *int            `json:"top_k"`
 	Input              map[string]any  `json:"input"`
 	OutputSchema       json.RawMessage `json:"output_schema"`
 	Tools              []string        `json:"tools"`
 	CredentialID       string          `json:"credential_id"`
 	CacheTimeout       int             `json:"cache_timeout"`
+	ReasoningEffort    string          `json:"reasoning_effort"`
+	WebSearch          bool            `json:"web_search"`
+	PromptCaching      bool            `json:"prompt_caching"`
 }
 
 type RunPromptResponse struct {

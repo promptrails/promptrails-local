@@ -34,7 +34,10 @@ func GenerateExecutionOutput(agentName string, input map[string]any) map[string]
 }
 
 // GeneratePromptRunResponse creates a simulated response for a prompt run.
-func GeneratePromptRunResponse(promptName string) model.RunPromptResponse {
+// GeneratePromptRunResponse builds a simulated run result. When req carries the
+// prompt-caching or reasoning feature toggles, the token usage gains the
+// matching cached/reasoning breakdown so SDK callers can exercise those fields.
+func GeneratePromptRunResponse(promptName string, req *model.RunPromptRequest) model.RunPromptResponse {
 	content := fmt.Sprintf(
 		"[Simulated LLM response for prompt %q] "+
 			"This is a fake response from the PromptRails local emulator.",
@@ -44,13 +47,27 @@ func GeneratePromptRunResponse(promptName string) model.RunPromptResponse {
 	promptTokens := randomInt(50, 300)
 	completionTokens := randomInt(30, 200)
 
+	usage := map[string]int{
+		"prompt_tokens":     promptTokens,
+		"completion_tokens": completionTokens,
+		"total_tokens":      promptTokens + completionTokens,
+	}
+	if req != nil {
+		if req.PromptCaching {
+			usage["cached_tokens"] = randomInt(0, promptTokens)
+			usage["cache_creation_tokens"] = randomInt(0, promptTokens)
+		}
+		if req.ReasoningEffort != "" {
+			reasoning := randomInt(20, 150)
+			usage["reasoning_tokens"] = reasoning
+			usage["completion_tokens"] = completionTokens + reasoning
+			usage["total_tokens"] = promptTokens + completionTokens + reasoning
+		}
+	}
+
 	return model.RunPromptResponse{
-		Content: content,
-		TokenUsage: map[string]int{
-			"prompt_tokens":     promptTokens,
-			"completion_tokens": completionTokens,
-			"total_tokens":      promptTokens + completionTokens,
-		},
+		Content:    content,
+		TokenUsage: usage,
 		Cost:       float64(promptTokens)*0.000003 + float64(completionTokens)*0.000015,
 		DurationMS: int64(randomInt(150, 1500)),
 		Model:      "gpt-4o",

@@ -205,6 +205,7 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 
 	// LLM Models
 	api.GET("/llm-models", h.ListLLMModels)
+	api.GET("/llm-models/available", h.ListAvailableLLMModels)
 
 	return e
 }
