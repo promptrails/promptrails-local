@@ -24,7 +24,6 @@ Place any of these JSON files in your fixtures directory. All files are optional
 | `llm_models.json` | LLM model catalog entries |
 | `mcp_tools.json` | MCP tool definitions |
 | `guardrails.json` | Agent guardrail configurations |
-| `memories.json` | Agent memory entries |
 
 ## File formats
 
@@ -305,24 +304,6 @@ Links agent versions to prompt versions. Required for chain and multi-agent type
 ]
 ```
 
-### memories.json
-
-```json
-[
-  {
-    "id": "MEM_KSUID",
-    "workspace_id": "any-value",
-    "agent_id": "AGENT_KSUID",
-    "content": "The user prefers concise answers",
-    "memory_type": "fact",
-    "importance": 0.9,
-    "access_count": 0
-  }
-]
-```
-
-**Memory types:** `fact`, `event`, `context`, `procedure`, `semantic`
-
 ## Generating KSUIDs
 
 If you need to generate KSUID values for your fixtures:
@@ -354,6 +335,5 @@ The default seed includes:
 | LLM Models | 42 | Full catalog across all providers |
 | MCP Tools | 6 | Builtin, datasource, remote, API |
 | Guardrails | 1 | PII redaction example |
-| Memories | 4 | Fact, procedure, semantic types |
 
 See `internal/seed/data/` in the repository for the exact fixture files.

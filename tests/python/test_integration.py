@@ -152,11 +152,3 @@ def test_create_and_list_scores(client):
 def test_list_mcp_tools(client):
     result = client.mcp_tools.list()
     assert len(result.data) > 0, "expected seed MCP tools"
-
-
-# --- Memories ---
-
-
-def test_memory_list(client):
-    memories = client.agents.list_memories(SEED_CHAT_AGENT_ID)
-    assert len(memories.data) > 0, "expected seed memories"

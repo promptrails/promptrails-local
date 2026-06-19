@@ -110,7 +110,7 @@ The emulator starts with example data so you can immediately test:
 - **4 Credentials** — OpenAI, Gemini, PostgreSQL, Linear (masked)
 - **47 LLM Models** — Full catalog (OpenAI, Anthropic, Gemini, DeepSeek, xAI, Fireworks, etc.)
 - **7 MCP Tools** — Linear, builtin, datasource, and API tools
-- **Guardrails, Memories** — Example entries for the Simple Chat Bot agent
+- **Guardrails** — Example entries for the Simple Chat Bot agent
 
 ### Supported Endpoints
 
@@ -129,7 +129,6 @@ The emulator starts with example data so you can immediately test:
 | Webhook Triggers | Yes | Yes (hook endpoint) | Token-based |
 | MCP Tools | Yes | - | + templates |
 | Guardrails | Yes | - | CRUD only |
-| Agent Memories | Yes | - | + search |
 
 ### Simulated Behavior
 
@@ -192,7 +191,6 @@ my-fixtures/
   llm_models.json
   mcp_tools.json
   guardrails.json
-  memories.json
 ```
 
 The JSON format matches the PromptRails API — see `internal/seed/data/` for examples.

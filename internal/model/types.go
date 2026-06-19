@@ -315,21 +315,6 @@ type Guardrail struct {
 	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
-type AgentMemory struct {
-	ID             string          `json:"id"`
-	WorkspaceID    string          `json:"workspace_id"`
-	AgentID        string          `json:"agent_id"`
-	Content        string          `json:"content"`
-	Metadata       json.RawMessage `json:"metadata,omitempty"`
-	MemoryType     string          `json:"memory_type"`
-	Importance     float64         `json:"importance"`
-	AccessCount    int             `json:"access_count"`
-	LastAccessedAt *time.Time      `json:"last_accessed_at,omitempty"`
-	ChatSessionID  *string         `json:"chat_session_id,omitempty"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
-}
-
 type LLMModel struct {
 	ID                    string     `json:"id"`
 	Provider              string     `json:"provider"`
@@ -663,18 +648,6 @@ type UpdateGuardrailRequest struct {
 	IsActive *bool           `json:"is_active,omitempty"`
 }
 
-type CreateMemoryRequest struct {
-	Content    string          `json:"content"`
-	MemoryType string          `json:"memory_type"`
-	Importance float64         `json:"importance"`
-	Metadata   json.RawMessage `json:"metadata"`
-}
-
-type SearchMemoryRequest struct {
-	Query string `json:"query"`
-	Limit int    `json:"limit"`
-}
-
 // Response types
 
 type PaginationMeta struct {
@@ -723,6 +696,5 @@ type StoreStats struct {
 	AgentTriggers  int `json:"agent_triggers"`
 	MCPTools       int `json:"mcp_tools"`
 	Guardrails     int `json:"guardrails"`
-	Memories       int `json:"memories"`
 	LLMModels      int `json:"llm_models"`
 }

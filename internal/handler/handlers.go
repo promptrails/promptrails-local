@@ -27,7 +27,6 @@ type Handlers struct {
 	AgentVFS     *AgentVFSHandler
 	MCPTool      *MCPToolHandler
 	Guardrail    *GuardrailHandler
-	Memory       *MemoryHandler
 	LLMModel     *LLMModelHandler
 	Admin        *AdminHandler
 
@@ -50,7 +49,6 @@ func New(s *store.Store, logger *zap.Logger, version string) *Handlers {
 		AgentVFS:     &AgentVFSHandler{store: s},
 		MCPTool:      &MCPToolHandler{store: s},
 		Guardrail:    &GuardrailHandler{store: s},
-		Memory:       &MemoryHandler{store: s},
 		LLMModel:     &LLMModelHandler{store: s},
 		Admin:        &AdminHandler{store: s, logger: logger},
 		version:      version,
@@ -197,15 +195,6 @@ func (h *Handlers) ListGuardrails(c echo.Context) error  { return h.Guardrail.Li
 func (h *Handlers) CreateGuardrail(c echo.Context) error { return h.Guardrail.Create(c) }
 func (h *Handlers) UpdateGuardrail(c echo.Context) error { return h.Guardrail.Update(c) }
 func (h *Handlers) DeleteGuardrail(c echo.Context) error { return h.Guardrail.Delete(c) }
-
-// ---------- Memory delegations ----------
-
-func (h *Handlers) ListMemories(c echo.Context) error      { return h.Memory.List(c) }
-func (h *Handlers) CreateMemory(c echo.Context) error      { return h.Memory.Create(c) }
-func (h *Handlers) SearchMemories(c echo.Context) error    { return h.Memory.Search(c) }
-func (h *Handlers) GetMemory(c echo.Context) error         { return h.Memory.Get(c) }
-func (h *Handlers) DeleteMemory(c echo.Context) error      { return h.Memory.Delete(c) }
-func (h *Handlers) DeleteAllMemories(c echo.Context) error { return h.Memory.DeleteAll(c) }
 
 // ---------- LLM Model delegations ----------
 

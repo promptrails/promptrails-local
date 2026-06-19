@@ -34,7 +34,6 @@ var OpenAPISpec = `{
     {"name": "Agent Triggers", "description": "Webhook-based agent triggers"},
     {"name": "MCP Tools", "description": "Model Context Protocol tools"},
     {"name": "Guardrails", "description": "Agent guardrails"},
-    {"name": "Memories", "description": "Agent memory management"},
     {"name": "LLM Models", "description": "Available LLM models"},
     {"name": "Admin", "description": "Emulator administration"}
   ],
@@ -406,18 +405,6 @@ var OpenAPISpec = `{
     "/api/v1/guardrails/{guardrailId}": {
       "patch": {"tags": ["Guardrails"], "summary": "Update guardrail", "operationId": "updateGuardrail", "parameters": [{"name": "guardrailId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Updated"}}},
       "delete": {"tags": ["Guardrails"], "summary": "Delete guardrail", "operationId": "deleteGuardrail", "parameters": [{"name": "guardrailId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
-    },
-    "/api/v1/agents/{agentId}/memories": {
-      "get": {"tags": ["Memories"], "summary": "List memories", "operationId": "listMemories", "parameters": [{"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "List"}}},
-      "post": {"tags": ["Memories"], "summary": "Create memory", "operationId": "createMemory", "parameters": [{"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"201": {"description": "Created"}}},
-      "delete": {"tags": ["Memories"], "summary": "Delete all memories", "operationId": "deleteAllMemories", "parameters": [{"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Deleted"}}}
-    },
-    "/api/v1/agents/{agentId}/memories/search": {
-      "post": {"tags": ["Memories"], "summary": "Search memories", "operationId": "searchMemories", "parameters": [{"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Results"}}}
-    },
-    "/api/v1/memories/{memoryId}": {
-      "get": {"tags": ["Memories"], "summary": "Get memory", "operationId": "getMemory", "parameters": [{"name": "memoryId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Details"}}},
-      "delete": {"tags": ["Memories"], "summary": "Delete memory", "operationId": "deleteMemory", "parameters": [{"name": "memoryId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
     },
     "/api/v1/llm-models": {
       "get": {"tags": ["LLM Models"], "summary": "List LLM models", "operationId": "listLLMModels", "responses": {"200": {"description": "List of models"}}}

@@ -195,14 +195,6 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 	api.PATCH("/guardrails/:guardrailId", h.UpdateGuardrail)
 	api.DELETE("/guardrails/:guardrailId", h.DeleteGuardrail)
 
-	// Memories
-	api.GET("/agents/:agentId/memories", h.ListMemories)
-	api.POST("/agents/:agentId/memories", h.CreateMemory)
-	api.DELETE("/agents/:agentId/memories", h.DeleteAllMemories)
-	api.POST("/agents/:agentId/memories/search", h.SearchMemories)
-	api.GET("/memories/:memoryId", h.GetMemory)
-	api.DELETE("/memories/:memoryId", h.DeleteMemory)
-
 	// LLM Models
 	api.GET("/llm-models", h.ListLLMModels)
 	api.GET("/llm-models/available", h.ListAvailableLLMModels)

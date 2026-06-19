@@ -166,17 +166,6 @@ The emulator dispatches every source uniformly — signature verification and ch
 | `PATCH` | `/guardrails/:guardrailId` | Update guardrail |
 | `DELETE` | `/guardrails/:guardrailId` | Delete guardrail |
 
-## Memories
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/agents/:agentId/memories` | List memories |
-| `POST` | `/agents/:agentId/memories` | Create memory |
-| `POST` | `/agents/:agentId/memories/search` | Search memories |
-| `DELETE` | `/agents/:agentId/memories` | Delete all memories for agent |
-| `GET` | `/memories/:memoryId` | Get memory |
-| `DELETE` | `/memories/:memoryId` | Delete memory |
-
 ## LLM Models
 
 | Method | Endpoint | Description |

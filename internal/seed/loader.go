@@ -147,18 +147,6 @@ func Load(s *store.Store, logger *zap.Logger) error {
 	}
 	logger.Info("loaded guardrails", zap.Int("count", len(guardrails)))
 
-	// Memories
-	var memories []model.AgentMemory
-	if err := loadJSON("data/memories.json", &memories); err != nil {
-		return fmt.Errorf("memories: %w", err)
-	}
-	for i := range memories {
-		memories[i].CreatedAt = now
-		memories[i].UpdatedAt = now
-		s.AddMemory(memories[i])
-	}
-	logger.Info("loaded memories", zap.Int("count", len(memories)))
-
 	return nil
 }
 
@@ -307,18 +295,6 @@ func LoadFromDir(s *store.Store, dir string, logger *zap.Logger) error {
 				items[i].CreatedAt = now
 				items[i].UpdatedAt = now
 				s.AddGuardrail(items[i])
-			}
-			return len(items), nil
-		}},
-		{"memories.json", func(data []byte, now time.Time) (int, error) {
-			var items []model.AgentMemory
-			if err := json.Unmarshal(data, &items); err != nil {
-				return 0, err
-			}
-			for i := range items {
-				items[i].CreatedAt = now
-				items[i].UpdatedAt = now
-				s.AddMemory(items[i])
 			}
 			return len(items), nil
 		}},

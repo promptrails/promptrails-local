@@ -48,7 +48,6 @@ type Store struct {
 	webhookTriggers     map[string]model.AgentTrigger
 	mcpTools            map[string]model.MCPTool
 	guardrails          map[string]model.Guardrail
-	memories            map[string]model.AgentMemory
 	llmModels           map[string]model.LLMModel
 	mcpTemplates        map[string]model.MCPTemplate
 	// VFS keyed by "agentID|path" — emulator is single-workspace so we
@@ -82,7 +81,6 @@ func (s *Store) initMaps() {
 	s.webhookTriggers = make(map[string]model.AgentTrigger)
 	s.mcpTools = make(map[string]model.MCPTool)
 	s.guardrails = make(map[string]model.Guardrail)
-	s.memories = make(map[string]model.AgentMemory)
 	s.llmModels = make(map[string]model.LLMModel)
 	s.mcpTemplates = make(map[string]model.MCPTemplate)
 	s.vfsFiles = make(map[string]model.AgentVFSFile)
@@ -115,7 +113,6 @@ func (s *Store) Stats() model.StoreStats {
 		AgentTriggers:  len(s.webhookTriggers),
 		MCPTools:       len(s.mcpTools),
 		Guardrails:     len(s.guardrails),
-		Memories:       len(s.memories),
 		LLMModels:      len(s.llmModels),
 	}
 }
@@ -1204,76 +1201,6 @@ func (s *Store) ListGuardrails(agentID string) []model.Guardrail {
 		return out[i].SortOrder < out[j].SortOrder
 	})
 	return out
-}
-
-// ============================================================
-// Memories
-// ============================================================
-
-// AddMemory inserts a memory (seed loader).
-func (s *Store) AddMemory(m model.AgentMemory) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.memories[m.ID] = m
-}
-
-// CreateMemory inserts a new memory.
-func (s *Store) CreateMemory(m model.AgentMemory) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.memories[m.ID] = m
-}
-
-// GetMemory returns a memory by ID.
-func (s *Store) GetMemory(id string) (model.AgentMemory, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	m, ok := s.memories[id]
-	return m, ok
-}
-
-// DeleteMemory removes a memory and returns whether it existed.
-func (s *Store) DeleteMemory(id string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if _, ok := s.memories[id]; !ok {
-		return false
-	}
-	delete(s.memories, id)
-	return true
-}
-
-// DeleteAllMemories removes all memories for a given agent, returning the count.
-func (s *Store) DeleteAllMemories(agentID string) int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	count := 0
-	for id, m := range s.memories {
-		if m.AgentID == agentID {
-			delete(s.memories, id)
-			count++
-		}
-	}
-	return count
-}
-
-// ListMemories returns a paginated list of memories for an agent.
-func (s *Store) ListMemories(agentID string, page, limit int) ([]model.AgentMemory, int) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	var all []model.AgentMemory
-	for _, m := range s.memories {
-		if m.AgentID != agentID {
-			continue
-		}
-		all = append(all, m)
-	}
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].CreatedAt.After(all[j].CreatedAt)
-	})
-	return paginate(all, page, limit)
 }
 
 // ============================================================
