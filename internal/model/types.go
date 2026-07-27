@@ -22,17 +22,76 @@ type Agent struct {
 	CurrentVersion *AgentVersion `json:"current_version,omitempty"`
 }
 
+// AgentVersion is a committed version of an agent's runtime behavior. In the
+// Agent/Workflow (v2) model the version OWNS the model + sampling
+// (model_config), run budget, approval policy, cache TTL, version-scoped
+// vfs/masking overrides, and the attached MCP tools. Prompt versions are pure
+// content and carry no model.
 type AgentVersion struct {
-	ID           string               `json:"id"`
-	AgentID      string               `json:"agent_id"`
-	Version      string               `json:"version"`
-	Config       json.RawMessage      `json:"config"`
-	InputSchema  json.RawMessage      `json:"input_schema"`
-	OutputSchema json.RawMessage      `json:"output_schema"`
-	IsCurrent    bool                 `json:"is_current"`
-	Message      string               `json:"message"`
-	CreatedAt    time.Time            `json:"created_at"`
-	Prompts      []AgentVersionPrompt `json:"prompts,omitempty"`
+	ID             string               `json:"id"`
+	AgentID        string               `json:"agent_id"`
+	Version        string               `json:"version"`
+	Message        string               `json:"message"`
+	Config         json.RawMessage      `json:"config"`
+	InputSchema    json.RawMessage      `json:"input_schema"`
+	OutputSchema   json.RawMessage      `json:"output_schema"`
+	IsCurrent      bool                 `json:"is_current"`
+	ModelConfig    *ModelConfig         `json:"model_config"`
+	RunBudget      *RunBudget           `json:"run_budget"`
+	ApprovalPolicy *ApprovalPolicy      `json:"approval_policy"`
+	CacheTimeout   *int                 `json:"cache_timeout"`
+	VFSEnabled     *bool                `json:"vfs_enabled"`
+	MaskingEnabled *bool                `json:"masking_enabled"`
+	Tools          []AgentVersionTool   `json:"tools,omitempty"`
+	CreatedAt      time.Time            `json:"created_at"`
+	Prompts        []AgentVersionPrompt `json:"prompts,omitempty"`
+}
+
+// AgentVersionTool is an MCP tool attached to an agent version with per-tool
+// approval / retry policy.
+type AgentVersionTool struct {
+	ID               string `json:"id"`
+	MCPToolID        string `json:"mcp_tool_id"`
+	RequiresApproval bool   `json:"requires_approval"`
+	NoRetry          bool   `json:"no_retry"`
+	SortOrder        int    `json:"sort_order"`
+}
+
+// ModelConfig is the version-scoped model + sampling ownership. Each field is
+// optional; unset sampling inherits the provider/model default.
+type ModelConfig struct {
+	ModelID         *string  `json:"model_id,omitempty"`
+	FallbackModelID *string  `json:"fallback_model_id,omitempty"`
+	Temperature     *float64 `json:"temperature,omitempty"`
+	TopP            *float64 `json:"top_p,omitempty"`
+	TopK            *int     `json:"top_k,omitempty"`
+	MaxTokens       *int     `json:"max_tokens,omitempty"`
+}
+
+// RunBudget bounds the whole execution tree, enforced at the root.
+type RunBudget struct {
+	MaxCost        *float64 `json:"max_cost,omitempty"`
+	MaxTotalTokens *int     `json:"max_total_tokens,omitempty"`
+	MaxToolCalls   *int     `json:"max_tool_calls,omitempty"`
+	MaxChildren    *int     `json:"max_children,omitempty"`
+	MaxDepth       *int     `json:"max_depth,omitempty"`
+}
+
+// ApprovalPolicy declares who may approve/deny a parked, approval-gated call.
+type ApprovalPolicy struct {
+	Mode      string   `json:"mode"`
+	MemberIDs []string `json:"member_ids,omitempty"`
+}
+
+// GuardrailSpec is a version-scoped guardrail attached to an agent version.
+type GuardrailSpec struct {
+	ID          string          `json:"id,omitempty"`
+	Type        string          `json:"type"`
+	ScannerType string          `json:"scanner_type"`
+	Action      string          `json:"action"`
+	Config      json.RawMessage `json:"config,omitempty"`
+	IsActive    bool            `json:"is_active"`
+	SortOrder   int             `json:"sort_order"`
 }
 
 type AgentVersionPrompt struct {
@@ -55,26 +114,20 @@ type Prompt struct {
 	CurrentVersion *PromptVersion `json:"current_version,omitempty"`
 }
 
+// PromptVersion is PURE CONTENT in the Agent/Workflow (v2) model: system/user
+// templates plus the declared input schema. Model, fallback, sampling, output
+// schema, tools, and cache TTL now live on the agent version.
 type PromptVersion struct {
-	ID                 string          `json:"id"`
-	PromptID           string          `json:"prompt_id"`
-	Version            string          `json:"version"`
-	SystemPrompt       string          `json:"system_prompt"`
-	UserPrompt         string          `json:"user_prompt"`
-	LLMModelID         *string         `json:"llm_model_id"`
-	FallbackLLMModelID *string         `json:"fallback_llm_model_id"`
-	Temperature        *float64        `json:"temperature"`
-	MaxTokens          *int            `json:"max_tokens"`
-	TopP               *float64        `json:"top_p"`
-	InputSchema        json.RawMessage `json:"input_schema"`
-	OutputSchema       json.RawMessage `json:"output_schema"`
-	IsCurrent          bool            `json:"is_current"`
-	Message            string          `json:"message"`
-	Config             json.RawMessage `json:"config"`
-	CacheTimeout       int             `json:"cache_timeout"`
-	CreatedAt          time.Time       `json:"created_at"`
-	LLMModel           *LLMModel       `json:"llm_model,omitempty"`
-	FallbackLLMModel   *LLMModel       `json:"fallback_llm_model,omitempty"`
+	ID           string          `json:"id"`
+	PromptID     string          `json:"prompt_id"`
+	Version      string          `json:"version"`
+	SystemPrompt string          `json:"system_prompt"`
+	UserPrompt   string          `json:"user_prompt"`
+	InputSchema  json.RawMessage `json:"input_schema"`
+	IsCurrent    bool            `json:"is_current"`
+	Message      string          `json:"message"`
+	Config       json.RawMessage `json:"config"`
+	CreatedAt    time.Time       `json:"created_at"`
 }
 
 type DataSource struct {
@@ -111,26 +164,33 @@ type DataSourceVersion struct {
 	CreatedAt        time.Time       `json:"created_at"`
 }
 
+// Execution is one agent run. In the Agent/Workflow (v2) model an execution
+// may be part of a tree: parent_execution_id links a sub-agent delegation,
+// handoff continuation, or workflow agent-node run to its parent, and
+// children[] holds the direct (single-get) or full (tree endpoint) descendants.
 type Execution struct {
-	ID             string          `json:"id"`
-	AgentID        *string         `json:"agent_id"`
-	AgentVersionID *string         `json:"agent_version_id"`
-	WorkspaceID    string          `json:"workspace_id"`
-	UserID         *string         `json:"user_id"`
-	SessionID      string          `json:"session_id"`
-	Status         string          `json:"status"`
-	Input          json.RawMessage `json:"input"`
-	Output         json.RawMessage `json:"output"`
-	Error          string          `json:"error"`
-	Metadata       json.RawMessage `json:"metadata"`
-	TokenUsage     json.RawMessage `json:"token_usage"`
-	Cost           float64         `json:"cost"`
-	DurationMS     *int64          `json:"duration_ms"`
-	TraceID        string          `json:"trace_id,omitempty"`
-	StartedAt      *time.Time      `json:"started_at"`
-	CompletedAt    *time.Time      `json:"completed_at"`
-	CreatedAt      time.Time       `json:"created_at"`
-	Agent          *Agent          `json:"agent,omitempty"`
+	ID                string          `json:"id"`
+	AgentID           *string         `json:"agent_id"`
+	AgentVersionID    *string         `json:"agent_version_id"`
+	ParentExecutionID *string         `json:"parent_execution_id"`
+	WorkspaceID       string          `json:"workspace_id"`
+	UserID            *string         `json:"user_id"`
+	SessionID         string          `json:"session_id"`
+	Status            string          `json:"status"`
+	Input             json.RawMessage `json:"input"`
+	Output            json.RawMessage `json:"output"`
+	Error             string          `json:"error"`
+	Metadata          json.RawMessage `json:"metadata"`
+	TokenUsage        json.RawMessage `json:"token_usage"`
+	Cost              float64         `json:"cost"`
+	DurationMS        *int64          `json:"duration_ms"`
+	TraceID           string          `json:"trace_id,omitempty"`
+	ApprovalExpiresAt *time.Time      `json:"approval_expires_at,omitempty"`
+	StartedAt         *time.Time      `json:"started_at"`
+	CompletedAt       *time.Time      `json:"completed_at"`
+	CreatedAt         time.Time       `json:"created_at"`
+	Agent             *Agent          `json:"agent,omitempty"`
+	Children          []Execution     `json:"children,omitempty"`
 }
 
 type Credential struct {
@@ -203,52 +263,16 @@ type Trace struct {
 	CreatedAt    time.Time       `json:"created_at"`
 }
 
-type Score struct {
-	ID          string    `json:"id"`
-	WorkspaceID string    `json:"workspace_id"`
-	TraceID     string    `json:"trace_id"`
-	SpanID      *string   `json:"span_id,omitempty"`
-	Name        string    `json:"name"`
-	Value       *float64  `json:"value,omitempty"`
-	StringValue *string   `json:"string_value,omitempty"`
-	BoolValue   *bool     `json:"bool_value,omitempty"`
-	DataType    string    `json:"data_type"`
-	Comment     *string   `json:"comment,omitempty"`
-	Source      string    `json:"source"`
-	ConfigID    *string   `json:"config_id,omitempty"`
-	ExecutionID *string   `json:"execution_id,omitempty"`
-	AgentID     *string   `json:"agent_id,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-type ScoreConfig struct {
-	ID          string          `json:"id"`
-	WorkspaceID string          `json:"workspace_id"`
-	Name        string          `json:"name"`
-	DataType    string          `json:"data_type"`
-	MinValue    *float64        `json:"min_value,omitempty"`
-	MaxValue    *float64        `json:"max_value,omitempty"`
-	Categories  json.RawMessage `json:"categories"`
-	Description *string         `json:"description,omitempty"`
-	IsActive    bool            `json:"is_active"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
-}
-
-type ApprovalRequest struct {
-	ID             string          `json:"id"`
-	ExecutionID    string          `json:"execution_id"`
-	AgentID        string          `json:"agent_id"`
-	WorkspaceID    string          `json:"workspace_id"`
-	CheckpointName string          `json:"checkpoint_name"`
-	Payload        json.RawMessage `json:"payload"`
-	Status         string          `json:"status"`
-	DecidedBy      *string         `json:"decided_by"`
-	DecidedAt      *time.Time      `json:"decided_at"`
-	ExpiresAt      *time.Time      `json:"expires_at"`
-	Reason         *string         `json:"reason"`
-	CreatedAt      time.Time       `json:"created_at"`
+// TraceSummary is the aggregate metering rollup returned by GET
+// /traces/summary (the v2 replacement for the removed cost summary).
+type TraceSummary struct {
+	TotalTraces    int64   `json:"total_traces"`
+	TotalTokens    int64   `json:"total_tokens"`
+	TotalCost      float64 `json:"total_cost"`
+	AvgDurationMS  float64 `json:"avg_duration_ms"`
+	ErrorCount     int64   `json:"error_count"`
+	UniqueModels   int64   `json:"unique_models"`
+	UniqueSessions int64   `json:"unique_sessions"`
 }
 
 type AgentTrigger struct {
@@ -388,7 +412,9 @@ type MCPTemplate struct {
 type CreateAgentRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Type        string `json:"type"`
+	// Type is the agent kind: "agent" (prompt + tools + optional sub-agents)
+	// or "workflow" (deterministic DAG). These are the only valid v2 types.
+	Type string `json:"type"`
 }
 
 type UpdateAgentRequest struct {
@@ -403,13 +429,20 @@ type UpdateAgentRequest struct {
 }
 
 type CreateAgentVersionRequest struct {
-	Version      string          `json:"version"`
-	Config       json.RawMessage `json:"config"`
-	InputSchema  json.RawMessage `json:"input_schema"`
-	OutputSchema json.RawMessage `json:"output_schema"`
-	SetCurrent   bool            `json:"set_current"`
-	Message      string          `json:"message"`
-	PromptIDs    []struct {
+	Version        string             `json:"version"`
+	Config         json.RawMessage    `json:"config"`
+	InputSchema    json.RawMessage    `json:"input_schema"`
+	OutputSchema   json.RawMessage    `json:"output_schema"`
+	SetCurrent     bool               `json:"set_current"`
+	Message        string             `json:"message"`
+	ModelConfig    *ModelConfig       `json:"model_config"`
+	RunBudget      *RunBudget         `json:"run_budget"`
+	ApprovalPolicy *ApprovalPolicy    `json:"approval_policy"`
+	CacheTimeout   *int               `json:"cache_timeout"`
+	VFSEnabled     *bool              `json:"vfs_enabled"`
+	MaskingEnabled *bool              `json:"masking_enabled"`
+	Tools          []AgentVersionTool `json:"tools"`
+	PromptIDs      []struct {
 		PromptID  string `json:"prompt_id"`
 		Role      string `json:"role"`
 		SortOrder int    `json:"sort_order"`
@@ -441,21 +474,16 @@ type UpdatePromptRequest struct {
 	Status      *string `json:"status,omitempty"`
 }
 
+// CreatePromptVersionRequest creates a content-only prompt version (v2 model).
+// Model/sampling/tools/output-schema/cache belong to the agent version.
 type CreatePromptVersionRequest struct {
-	Version            string          `json:"version"`
-	SystemPrompt       string          `json:"system_prompt"`
-	UserPrompt         string          `json:"user_prompt"`
-	LLMModelID         *string         `json:"llm_model_id"`
-	FallbackLLMModelID *string         `json:"fallback_llm_model_id"`
-	Temperature        *float64        `json:"temperature"`
-	MaxTokens          *int            `json:"max_tokens"`
-	TopP               *float64        `json:"top_p"`
-	InputSchema        json.RawMessage `json:"input_schema"`
-	OutputSchema       json.RawMessage `json:"output_schema"`
-	SetCurrent         bool            `json:"set_current"`
-	Message            string          `json:"message"`
-	Config             json.RawMessage `json:"config"`
-	CacheTimeout       int             `json:"cache_timeout"`
+	Version      string          `json:"version"`
+	SystemPrompt string          `json:"system_prompt"`
+	UserPrompt   string          `json:"user_prompt"`
+	InputSchema  json.RawMessage `json:"input_schema"`
+	SetCurrent   bool            `json:"set_current"`
+	Message      string          `json:"message"`
+	Config       json.RawMessage `json:"config"`
 }
 
 type PreviewPromptRequest struct {
@@ -463,32 +491,12 @@ type PreviewPromptRequest struct {
 	Input     map[string]any `json:"input"`
 }
 
-type RunPromptRequest struct {
-	SystemPrompt       string          `json:"system_prompt"`
-	UserPrompt         string          `json:"user_prompt"`
-	LLMModelID         string          `json:"llm_model_id"`
-	FallbackLLMModelID string          `json:"fallback_llm_model_id"`
-	Temperature        *float64        `json:"temperature"`
-	MaxTokens          *int            `json:"max_tokens"`
-	TopP               *float64        `json:"top_p"`
-	TopK               *int            `json:"top_k"`
-	Input              map[string]any  `json:"input"`
-	OutputSchema       json.RawMessage `json:"output_schema"`
-	Tools              []string        `json:"tools"`
-	CredentialID       string          `json:"credential_id"`
-	CacheTimeout       int             `json:"cache_timeout"`
-	ReasoningEffort    string          `json:"reasoning_effort"`
-	WebSearch          bool            `json:"web_search"`
-	PromptCaching      bool            `json:"prompt_caching"`
-}
-
-type RunPromptResponse struct {
-	Content    string         `json:"content"`
-	TokenUsage map[string]int `json:"token_usage"`
-	Cost       float64        `json:"cost"`
-	DurationMS int64          `json:"duration_ms"`
-	Model      string         `json:"model"`
-	TraceID    string         `json:"trace_id,omitempty"`
+// PreviewPromptResponse is the dry-run render returned by prompt preview — no
+// LLM is called, so there is no token usage / cost.
+type PreviewPromptResponse struct {
+	SystemPrompt string         `json:"system_prompt"`
+	UserPrompt   string         `json:"user_prompt"`
+	Input        map[string]any `json:"input"`
 }
 
 type CreateDataSourceRequest struct {
@@ -552,49 +560,17 @@ type SendMessageResponse struct {
 	ExecutionID      string       `json:"execution_id,omitempty"`
 }
 
-type CreateScoreRequest struct {
-	TraceID     string   `json:"trace_id"`
-	SpanID      *string  `json:"span_id,omitempty"`
-	Name        string   `json:"name"`
-	Value       *float64 `json:"value,omitempty"`
-	StringValue *string  `json:"string_value,omitempty"`
-	BoolValue   *bool    `json:"bool_value,omitempty"`
-	DataType    string   `json:"data_type"`
-	Comment     *string  `json:"comment,omitempty"`
-	Source      string   `json:"source"`
-	ConfigID    *string  `json:"config_id,omitempty"`
-	ExecutionID *string  `json:"execution_id,omitempty"`
-	AgentID     *string  `json:"agent_id,omitempty"`
-}
-
-type UpdateScoreRequest struct {
-	Value       *float64 `json:"value,omitempty"`
-	StringValue *string  `json:"string_value,omitempty"`
-	BoolValue   *bool    `json:"bool_value,omitempty"`
-	Comment     *string  `json:"comment,omitempty"`
-}
-
-type CreateScoreConfigRequest struct {
-	Name        string          `json:"name"`
-	DataType    string          `json:"data_type"`
-	MinValue    *float64        `json:"min_value,omitempty"`
-	MaxValue    *float64        `json:"max_value,omitempty"`
-	Categories  json.RawMessage `json:"categories"`
-	Description *string         `json:"description,omitempty"`
-}
-
-type UpdateScoreConfigRequest struct {
-	Name        *string         `json:"name,omitempty"`
-	Description *string         `json:"description,omitempty"`
-	IsActive    *bool           `json:"is_active,omitempty"`
-	MinValue    *float64        `json:"min_value,omitempty"`
-	MaxValue    *float64        `json:"max_value,omitempty"`
-	Categories  json.RawMessage `json:"categories,omitempty"`
-}
-
-type DecideApprovalRequest struct {
-	Decision string `json:"decision"`
-	Reason   string `json:"reason"`
+// PlaygroundRequest runs a persisted agent version with an ephemeral prompt
+// snapshot. The override is recorded on the execution but does not create or
+// promote prompt/agent versions.
+type PlaygroundRequest struct {
+	Input          map[string]any `json:"input"`
+	VersionID      string         `json:"version_id"`
+	PromptOverride struct {
+		SystemPrompt string          `json:"system_prompt"`
+		UserPrompt   string          `json:"user_prompt"`
+		InputSchema  json.RawMessage `json:"input_schema"`
+	} `json:"prompt_override"`
 }
 
 type CreateAgentTriggerRequest struct {
@@ -690,9 +666,6 @@ type StoreStats struct {
 	Credentials    int `json:"credentials"`
 	ChatSessions   int `json:"chat_sessions"`
 	Traces         int `json:"traces"`
-	Scores         int `json:"scores"`
-	ScoreConfigs   int `json:"score_configs"`
-	Approvals      int `json:"approvals"`
 	AgentTriggers  int `json:"agent_triggers"`
 	MCPTools       int `json:"mcp_tools"`
 	Guardrails     int `json:"guardrails"`

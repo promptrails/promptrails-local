@@ -27,13 +27,13 @@ def test_list_agents(client):
 def test_get_agent(client):
     agent = client.agents.get(SEED_AGENT_ID)
     assert agent.name == "Simple Agent"
-    assert agent.type == "simple"
+    assert agent.type == "agent"
 
 
 def test_create_and_delete_agent(client):
     agent = client.agents.create(
         name="Python Test Agent",
-        type="simple",
+        type="agent",
         description="Created by Python integration test",
     )
     assert agent.id
@@ -125,25 +125,6 @@ def test_list_traces(client):
 
     result = client.traces.list()
     assert len(result.data) > 0, "expected traces from execution"
-
-
-# --- Scores ---
-
-
-def test_create_and_list_scores(client):
-    exec_result = client.agents.execute(SEED_AGENT_ID, input={"topic": "scores"})
-
-    score = client.scores.create(
-        trace_id=exec_result.trace_id,
-        name="accuracy",
-        value=0.95,
-        data_type="numeric",
-        source="api",
-    )
-    assert score.id
-
-    scores = client.scores.list()
-    assert len(scores.data) > 0
 
 
 # --- MCP Tools ---

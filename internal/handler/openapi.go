@@ -28,9 +28,7 @@ var OpenAPISpec = `{
     {"name": "Data Sources", "description": "External data source management"},
     {"name": "Credentials", "description": "Credential management"},
     {"name": "Chat", "description": "Chat sessions and messages"},
-    {"name": "Traces", "description": "Execution traces"},
-    {"name": "Scores", "description": "Evaluation scores"},
-    {"name": "Approvals", "description": "Human-in-the-loop approvals"},
+    {"name": "Traces", "description": "Execution traces and metering summary"},
     {"name": "Agent Triggers", "description": "Webhook-based agent triggers"},
     {"name": "MCP Tools", "description": "Model Context Protocol tools"},
     {"name": "Guardrails", "description": "Agent guardrails"},
@@ -91,7 +89,7 @@ var OpenAPISpec = `{
                 "properties": {
                   "name": {"type": "string"},
                   "description": {"type": "string"},
-                  "type": {"type": "string", "enum": ["simple", "chain", "multi_agent", "workflow", "composite"]}
+                  "type": {"type": "string", "enum": ["agent", "workflow"]}
                 }
               }
             }
@@ -233,12 +231,55 @@ var OpenAPISpec = `{
     "/api/v1/agents/{agentId}/preview": {
       "post": {
         "tags": ["Agents"],
-        "summary": "Preview agent",
+        "summary": "Preview agent execution (dry-run, no LLM call)",
         "operationId": "previewAgent",
         "parameters": [
           {"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}
         ],
         "responses": {"200": {"description": "Preview result"}}
+      }
+    },
+    "/api/v1/agents/{agentId}/playground": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get the agent's current version content to pre-fill the playground",
+        "operationId": "getAgentPlayground",
+        "parameters": [
+          {"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Agent with current version"}, "404": {"description": "Not found"}}
+      },
+      "post": {
+        "tags": ["Executions"],
+        "summary": "Execute an agent with temporary prompt content",
+        "operationId": "executeAgentPlayground",
+        "parameters": [
+          {"name": "agentId", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["input", "prompt_override"],
+                "properties": {
+                  "input": {"type": "object"},
+                  "version_id": {"type": "string"},
+                  "prompt_override": {
+                    "type": "object",
+                    "properties": {
+                      "system_prompt": {"type": "string"},
+                      "user_prompt": {"type": "string"},
+                      "input_schema": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {"201": {"description": "Playground execution created"}, "404": {"description": "Not found"}}
       }
     },
     "/api/v1/prompts": {
@@ -287,19 +328,28 @@ var OpenAPISpec = `{
       "put": {"tags": ["Prompts"], "summary": "Promote prompt version", "operationId": "promotePromptVersion", "parameters": [{"name": "promptId", "in": "path", "required": true, "schema": {"type": "string"}}, {"name": "versionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Promoted"}}}
     },
     "/api/v1/prompts/{promptId}/preview": {
-      "post": {"tags": ["Prompts"], "summary": "Preview prompt", "operationId": "previewPrompt", "parameters": [{"name": "promptId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Preview"}}}
-    },
-    "/api/v1/prompts/{promptId}/run": {
-      "post": {"tags": ["Prompts"], "summary": "Run prompt (simulated)", "operationId": "runPrompt", "parameters": [{"name": "promptId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Run result"}}}
+      "post": {"tags": ["Prompts"], "summary": "Preview prompt rendering (dry-run, no LLM call)", "operationId": "previewPrompt", "parameters": [{"name": "promptId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Preview"}}}
     },
     "/api/v1/executions": {
-      "get": {"tags": ["Executions"], "summary": "List executions", "operationId": "listExecutions", "parameters": [{"name": "page", "in": "query", "schema": {"type": "integer"}}, {"name": "limit", "in": "query", "schema": {"type": "integer"}}, {"name": "agent_id", "in": "query", "schema": {"type": "string"}}, {"name": "session_id", "in": "query", "schema": {"type": "string"}}, {"name": "status", "in": "query", "schema": {"type": "string"}}], "responses": {"200": {"description": "Paginated executions"}}}
+      "get": {"tags": ["Executions"], "summary": "List executions", "operationId": "listExecutions", "parameters": [{"name": "page", "in": "query", "schema": {"type": "integer"}}, {"name": "limit", "in": "query", "schema": {"type": "integer"}}, {"name": "agent_id", "in": "query", "schema": {"type": "string"}}, {"name": "session_id", "in": "query", "schema": {"type": "string"}}, {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["pending", "running", "completed", "failed", "cancelled", "rejected", "waiting_approval", "cancel_requested"]}}], "responses": {"200": {"description": "Paginated executions"}}}
+    },
+    "/api/v1/executions/approval-inbox": {
+      "get": {"tags": ["Executions"], "summary": "List executions awaiting approval", "operationId": "listApprovalInbox", "parameters": [{"name": "page", "in": "query", "schema": {"type": "integer"}}, {"name": "limit", "in": "query", "schema": {"type": "integer"}}], "responses": {"200": {"description": "Paginated executions parked at waiting_approval"}}}
     },
     "/api/v1/executions/{executionId}": {
-      "get": {"tags": ["Executions"], "summary": "Get execution", "operationId": "getExecution", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Execution details"}}}
+      "get": {"tags": ["Executions"], "summary": "Get execution (fills one level of children)", "operationId": "getExecution", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Execution details"}}}
     },
-    "/api/v1/executions/{executionId}/pending-approval": {
-      "get": {"tags": ["Executions"], "summary": "Get pending approval for execution", "operationId": "getPendingApproval", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Approval"}}}
+    "/api/v1/executions/{executionId}/tree": {
+      "get": {"tags": ["Executions"], "summary": "Get an execution with its full descendant tree", "operationId": "getExecutionTree", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Execution with populated children[]"}, "404": {"description": "Not found"}}}
+    },
+    "/api/v1/executions/{executionId}/cancel": {
+      "post": {"tags": ["Executions"], "summary": "Request cancellation of a running execution", "operationId": "cancelExecution", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Execution updated to cancel_requested"}, "404": {"description": "Not found"}}}
+    },
+    "/api/v1/executions/{executionId}/approve": {
+      "post": {"tags": ["Executions"], "summary": "Approve a run parked at waiting_approval", "operationId": "approveExecution", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Execution resumed with the approved call"}, "400": {"description": "Not awaiting approval"}, "404": {"description": "Not found"}}}
+    },
+    "/api/v1/executions/{executionId}/deny": {
+      "post": {"tags": ["Executions"], "summary": "Deny a run parked at waiting_approval", "operationId": "denyExecution", "parameters": [{"name": "executionId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Execution resumed with the denial injected"}, "400": {"description": "Not awaiting approval"}, "404": {"description": "Not found"}}}
     },
     "/api/v1/data-sources": {
       "get": {"tags": ["Data Sources"], "summary": "List data sources", "operationId": "listDataSources", "responses": {"200": {"description": "List"}}},
@@ -341,35 +391,11 @@ var OpenAPISpec = `{
     "/api/v1/traces": {
       "get": {"tags": ["Traces"], "summary": "List traces", "operationId": "listTraces", "responses": {"200": {"description": "List"}}}
     },
+    "/api/v1/traces/summary": {
+      "get": {"tags": ["Traces"], "summary": "Get trace summary statistics", "operationId": "getTraceSummary", "responses": {"200": {"description": "Aggregate metering statistics (total_traces, total_tokens, total_cost, avg_duration_ms, error_count, unique_models, unique_sessions)"}}}
+    },
     "/api/v1/traces/{traceId}": {
       "get": {"tags": ["Traces"], "summary": "Get trace", "operationId": "getTrace", "parameters": [{"name": "traceId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Trace details"}}}
-    },
-    "/api/v1/scores": {
-      "get": {"tags": ["Scores"], "summary": "List scores", "operationId": "listScores", "responses": {"200": {"description": "List"}}},
-      "post": {"tags": ["Scores"], "summary": "Create score", "operationId": "createScore", "responses": {"201": {"description": "Created"}}}
-    },
-    "/api/v1/scores/{scoreId}": {
-      "get": {"tags": ["Scores"], "summary": "Get score", "operationId": "getScore", "parameters": [{"name": "scoreId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Details"}}},
-      "patch": {"tags": ["Scores"], "summary": "Update score", "operationId": "updateScore", "parameters": [{"name": "scoreId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Updated"}}},
-      "delete": {"tags": ["Scores"], "summary": "Delete score", "operationId": "deleteScore", "parameters": [{"name": "scoreId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
-    },
-    "/api/v1/score-configs": {
-      "get": {"tags": ["Scores"], "summary": "List score configs", "operationId": "listScoreConfigs", "responses": {"200": {"description": "List"}}},
-      "post": {"tags": ["Scores"], "summary": "Create score config", "operationId": "createScoreConfig", "responses": {"201": {"description": "Created"}}}
-    },
-    "/api/v1/score-configs/{configId}": {
-      "get": {"tags": ["Scores"], "summary": "Get score config", "operationId": "getScoreConfig", "parameters": [{"name": "configId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Details"}}},
-      "patch": {"tags": ["Scores"], "summary": "Update score config", "operationId": "updateScoreConfig", "parameters": [{"name": "configId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Updated"}}},
-      "delete": {"tags": ["Scores"], "summary": "Delete score config", "operationId": "deleteScoreConfig", "parameters": [{"name": "configId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"204": {"description": "Deleted"}}}
-    },
-    "/api/v1/approvals": {
-      "get": {"tags": ["Approvals"], "summary": "List approvals", "operationId": "listApprovals", "responses": {"200": {"description": "List"}}}
-    },
-    "/api/v1/approvals/{approvalId}": {
-      "get": {"tags": ["Approvals"], "summary": "Get approval", "operationId": "getApproval", "parameters": [{"name": "approvalId", "in": "path", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Details"}}}
-    },
-    "/api/v1/approvals/{approvalId}/decide": {
-      "post": {"tags": ["Approvals"], "summary": "Decide approval", "operationId": "decideApproval", "parameters": [{"name": "approvalId", "in": "path", "required": true, "schema": {"type": "string"}}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["decision"], "properties": {"decision": {"type": "string", "enum": ["approved", "rejected"]}, "reason": {"type": "string"}}}}}}, "responses": {"200": {"description": "Decided"}}}
     },
     "/api/v1/triggers": {
       "get": {"tags": ["Agent Triggers"], "summary": "List triggers", "operationId": "listAgentTriggers", "responses": {"200": {"description": "List"}}},

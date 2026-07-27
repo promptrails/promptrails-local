@@ -104,8 +104,8 @@ Interactive API documentation is available at **http://localhost:8080/docs** (po
 
 The emulator starts with example data so you can immediately test:
 
-- **6 Agents** — simple, chain, multi-agent, and approval-based agents
-- **8 Prompts** — with multiple versions and template variables
+- **6 Agents** — four `agent`-type (single prompt + tools, incl. an approval demo) and two `workflow`-type (chain + multi-perspective)
+- **8 Prompts** — content-only, with multiple versions and template variables
 - **2 Data Sources** — PostgreSQL examples with query templates
 - **4 Credentials** — OpenAI, Gemini, PostgreSQL, Linear (masked)
 - **47 LLM Models** — Full catalog (OpenAI, Anthropic, Gemini, DeepSeek, xAI, Fireworks, etc.)
@@ -116,24 +116,27 @@ The emulator starts with example data so you can immediately test:
 
 | Resource | CRUD | Execute/Run | Notes |
 |----------|------|-------------|-------|
-| Agents | Yes | Yes (simulated) | + versions, promote, preview |
-| Prompts | Yes | Yes (simulated) | + versions, promote, preview |
+| Agents | Yes | Yes (simulated) | + versions, promote, preview, playground |
+| Prompts | Yes | Preview only | Content-only; + versions, promote |
 | Data Sources | Yes | Yes (mock results) | + versions |
-| Executions | Read | Auto-created | From agent execute |
+| Executions | Read | Auto-created | + tree, cancel, approve/deny, approval-inbox |
 | Credentials | Yes | - | Validation skipped |
 | Chat Sessions | Yes | Yes (simulated) | Multi-turn tracking |
 | LLM Models | Read | - | From fixture catalog |
-| Traces | Read | Auto-created | From executions |
-| Scores | Yes | - | + score configs |
-| Approvals | Yes | - | approve/reject flow |
+| Traces | Read | Auto-created | + `/traces/summary` metering rollup |
 | Webhook Triggers | Yes | Yes (hook endpoint) | Token-based |
 | MCP Tools | Yes | - | + templates |
 | Guardrails | Yes | - | CRUD only |
 
+Agent types are `agent` and `workflow` (the API v2 model). Prompt versions are pure
+content — model, sampling, tools, and cache TTL live on the agent version.
+Approvals are handled inline on executions: a run parks at `waiting_approval`
+and resumes via `POST /executions/{id}/approve` or `/deny`.
+
 ### Simulated Behavior
 
-- **Agent execution** returns a fake response with simulated token usage, cost, and duration
-- **Prompt run** returns simulated content with token metrics
+- **Agent execution** returns a fake response with simulated token usage, cost, and duration; a version with an approval policy or an approval-gated tool parks at `waiting_approval`
+- **Prompt preview** renders the content-only templates (dry-run, no LLM call)
 - **Chat messages** generate automatic assistant replies
 - **Traces** are auto-created for every execution
 - **Data source queries** return mock rows

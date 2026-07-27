@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"sort"
 	"strings"
 	"sync"
@@ -42,9 +43,6 @@ type Store struct {
 	chatSessions        map[string]model.ChatSession
 	chatMessages        map[string]model.ChatMessage
 	traces              map[string]model.Trace
-	scores              map[string]model.Score
-	scoreConfigs        map[string]model.ScoreConfig
-	approvals           map[string]model.ApprovalRequest
 	webhookTriggers     map[string]model.AgentTrigger
 	mcpTools            map[string]model.MCPTool
 	guardrails          map[string]model.Guardrail
@@ -75,9 +73,6 @@ func (s *Store) initMaps() {
 	s.chatSessions = make(map[string]model.ChatSession)
 	s.chatMessages = make(map[string]model.ChatMessage)
 	s.traces = make(map[string]model.Trace)
-	s.scores = make(map[string]model.Score)
-	s.scoreConfigs = make(map[string]model.ScoreConfig)
-	s.approvals = make(map[string]model.ApprovalRequest)
 	s.webhookTriggers = make(map[string]model.AgentTrigger)
 	s.mcpTools = make(map[string]model.MCPTool)
 	s.guardrails = make(map[string]model.Guardrail)
@@ -107,9 +102,6 @@ func (s *Store) Stats() model.StoreStats {
 		Credentials:    len(s.credentials),
 		ChatSessions:   len(s.chatSessions),
 		Traces:         len(s.traces),
-		Scores:         len(s.scores),
-		ScoreConfigs:   len(s.scoreConfigs),
-		Approvals:      len(s.approvals),
 		AgentTriggers:  len(s.webhookTriggers),
 		MCPTools:       len(s.mcpTools),
 		Guardrails:     len(s.guardrails),
@@ -373,8 +365,6 @@ func (s *Store) currentPromptVersion(promptID string) *model.PromptVersion {
 	for _, v := range s.promptVersions {
 		if v.PromptID == promptID && v.IsCurrent {
 			cv := v
-			cv.LLMModel = s.llmModelPtr(cv.LLMModelID)
-			cv.FallbackLLMModel = s.llmModelPtr(cv.FallbackLLMModelID)
 			return &cv
 		}
 	}
@@ -404,10 +394,6 @@ func (s *Store) GetPromptVersion(id string) (model.PromptVersion, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	v, ok := s.promptVersions[id]
-	if ok {
-		v.LLMModel = s.llmModelPtr(v.LLMModelID)
-		v.FallbackLLMModel = s.llmModelPtr(v.FallbackLLMModelID)
-	}
 	return v, ok
 }
 
@@ -426,8 +412,6 @@ func (s *Store) ListPromptVersions(promptID string) []model.PromptVersion {
 	var out []model.PromptVersion
 	for _, v := range s.promptVersions {
 		if v.PromptID == promptID {
-			v.LLMModel = s.llmModelPtr(v.LLMModelID)
-			v.FallbackLLMModel = s.llmModelPtr(v.FallbackLLMModelID)
 			out = append(out, v)
 		}
 	}
@@ -818,160 +802,104 @@ func (s *Store) ListTraces(page, limit int) ([]model.Trace, int) {
 }
 
 // ============================================================
-// Scores
+// Execution tree (v2)
 // ============================================================
 
-// CreateScore inserts a new score.
-func (s *Store) CreateScore(sc model.Score) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.scores[sc.ID] = sc
-}
-
-// GetScore returns a score by ID.
-func (s *Store) GetScore(id string) (model.Score, bool) {
+// ExecutionTree returns the execution with its full descendant tree populated
+// recursively into children[]. Ordering is by creation time.
+func (s *Store) ExecutionTree(id string) (model.Execution, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	sc, ok := s.scores[id]
-	return sc, ok
-}
-
-// UpdateScore replaces a score in place.
-func (s *Store) UpdateScore(sc model.Score) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.scores[sc.ID] = sc
-}
-
-// DeleteScore removes a score and returns whether it existed.
-func (s *Store) DeleteScore(id string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if _, ok := s.scores[id]; !ok {
-		return false
+	root, ok := s.executions[id]
+	if !ok {
+		return model.Execution{}, false
 	}
-	delete(s.scores, id)
-	return true
-}
-
-// ListScores returns a paginated list of all scores.
-func (s *Store) ListScores(page, limit int) ([]model.Score, int) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	var all []model.Score
-	for _, sc := range s.scores {
-		all = append(all, sc)
-	}
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].CreatedAt.After(all[j].CreatedAt)
-	})
-	return paginate(all, page, limit)
-}
-
-// ============================================================
-// Score Configs
-// ============================================================
-
-// CreateScoreConfig inserts a new score config.
-func (s *Store) CreateScoreConfig(cfg model.ScoreConfig) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.scoreConfigs[cfg.ID] = cfg
-}
-
-// GetScoreConfig returns a score config by ID.
-func (s *Store) GetScoreConfig(id string) (model.ScoreConfig, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	cfg, ok := s.scoreConfigs[id]
-	return cfg, ok
-}
-
-// UpdateScoreConfig replaces a score config in place.
-func (s *Store) UpdateScoreConfig(cfg model.ScoreConfig) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.scoreConfigs[cfg.ID] = cfg
-}
-
-// DeleteScoreConfig removes a score config and returns whether it existed.
-func (s *Store) DeleteScoreConfig(id string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if _, ok := s.scoreConfigs[id]; !ok {
-		return false
-	}
-	delete(s.scoreConfigs, id)
-	return true
-}
-
-// ListScoreConfigs returns a paginated list of all score configs.
-func (s *Store) ListScoreConfigs(page, limit int) ([]model.ScoreConfig, int) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	var all []model.ScoreConfig
-	for _, cfg := range s.scoreConfigs {
-		all = append(all, cfg)
-	}
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].CreatedAt.After(all[j].CreatedAt)
-	})
-	return paginate(all, page, limit)
-}
-
-// ============================================================
-// Approvals
-// ============================================================
-
-// CreateApproval inserts a new approval request.
-func (s *Store) CreateApproval(a model.ApprovalRequest) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.approvals[a.ID] = a
-}
-
-// GetApproval returns an approval request by ID.
-func (s *Store) GetApproval(id string) (model.ApprovalRequest, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	a, ok := s.approvals[id]
-	return a, ok
-}
-
-// UpdateApproval replaces an approval request in place.
-func (s *Store) UpdateApproval(a model.ApprovalRequest) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.approvals[a.ID] = a
-}
-
-// GetApprovalByExecutionID returns the approval request for an execution.
-func (s *Store) GetApprovalByExecutionID(executionID string) (model.ApprovalRequest, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	for _, a := range s.approvals {
-		if a.ExecutionID == executionID {
-			return a, true
+	if root.AgentID != nil {
+		if a, aok := s.agents[*root.AgentID]; aok {
+			root.Agent = &a
 		}
 	}
-	return model.ApprovalRequest{}, false
+	root.Children = s.childExecutions(id)
+	return root, true
 }
 
-// ListApprovals returns a paginated list of all approvals.
-func (s *Store) ListApprovals(page, limit int) ([]model.ApprovalRequest, int) {
+// childExecutions returns the direct children of parentID with their own
+// subtrees populated (must be called under at least RLock).
+func (s *Store) childExecutions(parentID string) []model.Execution {
+	var out []model.Execution
+	for _, e := range s.executions {
+		if e.ParentExecutionID != nil && *e.ParentExecutionID == parentID {
+			child := e
+			if child.AgentID != nil {
+				if a, aok := s.agents[*child.AgentID]; aok {
+					child.Agent = &a
+				}
+			}
+			child.Children = s.childExecutions(child.ID)
+			out = append(out, child)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].CreatedAt.Before(out[j].CreatedAt)
+	})
+	return out
+}
+
+// ============================================================
+// Trace summary (v2 metering rollup)
+// ============================================================
+
+// TraceSummary computes aggregate metering statistics over all traces.
+func (s *Store) TraceSummary() model.TraceSummary {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var all []model.ApprovalRequest
-	for _, a := range s.approvals {
-		all = append(all, a)
+	var sum model.TraceSummary
+	var totalDuration int64
+	var durationCount int64
+	models := map[string]struct{}{}
+	sessions := map[string]struct{}{}
+
+	for _, t := range s.traces {
+		sum.TotalTraces++
+		if t.Cost != nil {
+			sum.TotalCost += *t.Cost
+		}
+		if t.DurationMS != nil {
+			totalDuration += int64(*t.DurationMS)
+			durationCount++
+		}
+		if t.Status == "error" {
+			sum.ErrorCount++
+		}
+		if t.ModelName != "" {
+			models[t.ModelName] = struct{}{}
+		}
+		if t.SessionID != "" {
+			sessions[t.SessionID] = struct{}{}
+		}
+		sum.TotalTokens += totalTokensOf(t.TokenUsage)
 	}
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].CreatedAt.After(all[j].CreatedAt)
-	})
-	return paginate(all, page, limit)
+	if durationCount > 0 {
+		sum.AvgDurationMS = float64(totalDuration) / float64(durationCount)
+	}
+	sum.UniqueModels = int64(len(models))
+	sum.UniqueSessions = int64(len(sessions))
+	return sum
+}
+
+// totalTokensOf extracts total_tokens from a token-usage JSON blob, best-effort.
+func totalTokensOf(raw []byte) int64 {
+	if len(raw) == 0 {
+		return 0
+	}
+	var usage struct {
+		TotalTokens int64 `json:"total_tokens"`
+	}
+	if err := json.Unmarshal(raw, &usage); err != nil {
+		return 0
+	}
+	return usage.TotalTokens
 }
 
 // ============================================================
@@ -1235,17 +1163,6 @@ func (s *Store) GetLLMModel(id string) (model.LLMModel, bool) {
 	defer s.mu.RUnlock()
 	m, ok := s.llmModels[id]
 	return m, ok
-}
-
-// llmModelPtr returns a pointer to an LLM model or nil (must be called under at least RLock).
-func (s *Store) llmModelPtr(id *string) *model.LLMModel {
-	if id == nil {
-		return nil
-	}
-	if m, ok := s.llmModels[*id]; ok {
-		return &m
-	}
-	return nil
 }
 
 // ============================================================

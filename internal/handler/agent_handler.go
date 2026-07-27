@@ -40,6 +40,9 @@ func (h *AgentHandler) Create(c echo.Context) error {
 	if req.Name == "" || req.Type == "" {
 		return badRequest(c, "name and type are required")
 	}
+	if req.Type != "agent" && req.Type != "workflow" {
+		return badRequest(c, "type must be 'agent' or 'workflow'")
+	}
 
 	now := time.Now()
 	agent := model.Agent{
@@ -120,15 +123,30 @@ func (h *AgentHandler) CreateVersion(c echo.Context) error {
 	}
 
 	version := model.AgentVersion{
-		ID:           ksuid.New().String(),
-		AgentID:      agentID,
-		Version:      req.Version,
-		Config:       req.Config,
-		InputSchema:  req.InputSchema,
-		OutputSchema: req.OutputSchema,
-		IsCurrent:    req.SetCurrent,
-		Message:      req.Message,
-		CreatedAt:    time.Now(),
+		ID:             ksuid.New().String(),
+		AgentID:        agentID,
+		Version:        req.Version,
+		Config:         req.Config,
+		InputSchema:    req.InputSchema,
+		OutputSchema:   req.OutputSchema,
+		IsCurrent:      req.SetCurrent,
+		Message:        req.Message,
+		ModelConfig:    req.ModelConfig,
+		RunBudget:      req.RunBudget,
+		ApprovalPolicy: req.ApprovalPolicy,
+		CacheTimeout:   req.CacheTimeout,
+		VFSEnabled:     req.VFSEnabled,
+		MaskingEnabled: req.MaskingEnabled,
+		CreatedAt:      time.Now(),
+	}
+
+	// Attach MCP tools with per-tool approval/retry policy, assigning IDs.
+	for _, t := range req.Tools {
+		tool := t
+		if tool.ID == "" {
+			tool.ID = ksuid.New().String()
+		}
+		version.Tools = append(version.Tools, tool)
 	}
 
 	// Build prompt associations. Links by prompt_id so executions auto-follow
@@ -184,7 +202,6 @@ func (h *AgentHandler) Preview(c echo.Context) error {
 
 func (h *AgentHandler) Execute(c echo.Context) error {
 	agentID := c.Param("agentId")
-	wid := getWorkspaceID()
 	agent, ok := h.store.GetAgent(agentID)
 	if !ok {
 		return notFound(c, "agent not found")
@@ -200,44 +217,133 @@ func (h *AgentHandler) Execute(c echo.Context) error {
 		sessionID = ksuid.New().String()
 	}
 
-	// Generate fake output and trace
-	output := fake.GenerateExecutionOutput(agent.Name, req.Input)
-	inputJSON, _ := json.Marshal(req.Input)
-	outputJSON, _ := json.Marshal(output)
-
-	now := time.Now()
-	durationMS := int64(250)
-	execution := model.Execution{
-		ID:          ksuid.New().String(),
-		AgentID:     &agentID,
-		WorkspaceID: wid,
-		SessionID:   sessionID,
-		Status:      "completed",
-		Input:       inputJSON,
-		Output:      outputJSON,
-		TokenUsage:  json.RawMessage(`{"prompt_tokens":150,"completion_tokens":80,"total_tokens":230}`),
-		Cost:        0.0023,
-		DurationMS:  &durationMS,
-		TraceID:     ksuid.New().String(),
-		StartedAt:   &now,
-		CompletedAt: &now,
-		CreatedAt:   now,
-	}
-
-	if req.UserID != "" {
-		execution.UserID = &req.UserID
-	}
-	if req.VersionID != "" {
-		execution.AgentVersionID = &req.VersionID
-	}
-
+	version := h.resolveVersion(agent, req.VersionID)
+	execution := h.newExecution(agent, sessionID, req.UserID, req.VersionID, req.Input, versionRequiresApproval(version))
 	h.store.CreateExecution(execution)
 
-	// Create trace spans for this execution
+	// Create trace spans for this execution.
 	traces := fake.CreateExecutionTrace(execution, agent.Name)
 	for _, t := range traces {
 		h.store.CreateTrace(t)
 	}
 
 	return dataResponse(c, http.StatusCreated, execution)
+}
+
+// Playground runs a persisted agent version with an ephemeral prompt snapshot.
+// The override is recorded on the execution metadata but does not create or
+// promote any prompt/agent version.
+func (h *AgentHandler) Playground(c echo.Context) error {
+	agentID := c.Param("agentId")
+	agent, ok := h.store.GetAgent(agentID)
+	if !ok {
+		return notFound(c, "agent not found")
+	}
+
+	var req model.PlaygroundRequest
+	if err := c.Bind(&req); err != nil {
+		return badRequest(c, "invalid request body")
+	}
+
+	sessionID := ksuid.New().String()
+	version := h.resolveVersion(agent, req.VersionID)
+	execution := h.newExecution(agent, sessionID, "", req.VersionID, req.Input, versionRequiresApproval(version))
+
+	// Record the ephemeral prompt override on the execution metadata.
+	meta, _ := json.Marshal(map[string]any{
+		"playground":      true,
+		"prompt_override": req.PromptOverride,
+	})
+	execution.Metadata = meta
+
+	h.store.CreateExecution(execution)
+	traces := fake.CreateExecutionTrace(execution, agent.Name)
+	for _, t := range traces {
+		h.store.CreateTrace(t)
+	}
+	return dataResponse(c, http.StatusCreated, execution)
+}
+
+// PlaygroundInfo returns the agent's current version content so a client can
+// pre-fill the playground editor before running an ephemeral prompt.
+func (h *AgentHandler) PlaygroundInfo(c echo.Context) error {
+	agent, ok := h.store.GetAgent(c.Param("agentId"))
+	if !ok {
+		return notFound(c, "agent not found")
+	}
+	return dataResponse(c, http.StatusOK, map[string]any{
+		"agent":           agent,
+		"current_version": agent.CurrentVersion,
+	})
+}
+
+// resolveVersion returns the agent version to run: the requested version, or
+// the agent's current version when none is given.
+func (h *AgentHandler) resolveVersion(agent model.Agent, versionID string) *model.AgentVersion {
+	if versionID != "" {
+		if v, ok := h.store.GetAgentVersion(versionID); ok {
+			return &v
+		}
+	}
+	return agent.CurrentVersion
+}
+
+// newExecution builds a simulated execution. When the version parks at an
+// approval-gated call the run stops at waiting_approval instead of completing.
+func (h *AgentHandler) newExecution(agent model.Agent, sessionID, userID, versionID string, input map[string]any, park bool) model.Execution {
+	inputJSON, _ := json.Marshal(input)
+	now := time.Now()
+
+	execution := model.Execution{
+		ID:          ksuid.New().String(),
+		AgentID:     &agent.ID,
+		WorkspaceID: agent.WorkspaceID,
+		SessionID:   sessionID,
+		Input:       inputJSON,
+		TraceID:     ksuid.New().String(),
+		StartedAt:   &now,
+		CreatedAt:   now,
+	}
+	if userID != "" {
+		execution.UserID = &userID
+	}
+	if versionID != "" {
+		execution.AgentVersionID = &versionID
+	}
+
+	if park {
+		expires := now.Add(24 * time.Hour)
+		execution.Status = "waiting_approval"
+		execution.ApprovalExpiresAt = &expires
+		return execution
+	}
+
+	output := fake.GenerateExecutionOutput(agent.Name, input)
+	outputJSON, _ := json.Marshal(output)
+	durationMS := int64(250)
+	execution.Status = "completed"
+	execution.Output = outputJSON
+	execution.TokenUsage = json.RawMessage(`{"prompt_tokens":150,"completion_tokens":80,"total_tokens":230}`)
+	execution.Cost = 0.0023
+	execution.DurationMS = &durationMS
+	execution.CompletedAt = &now
+	return execution
+}
+
+// versionRequiresApproval reports whether a run of this version parks at an
+// approval-gated call: either an explicit approval policy or a tool/sub-agent
+// flagged requires_approval.
+func versionRequiresApproval(v *model.AgentVersion) bool {
+	if v == nil {
+		return false
+	}
+	if v.ApprovalPolicy != nil {
+		return true
+	}
+	for _, t := range v.Tools {
+		if t.RequiresApproval {
+			return true
+		}
+	}
+	return false
 }

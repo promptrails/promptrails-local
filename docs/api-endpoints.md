@@ -8,16 +8,18 @@ For the interactive API reference with try-it-out functionality, visit **http://
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/agents` | List agents (supports `?type=`, `?status=`, `?name=` filters) |
-| `POST` | `/agents` | Create agent |
+| `GET` | `/agents` | List agents (supports `?type=` (`agent`\|`workflow`), `?status=`, `?name=` filters) |
+| `POST` | `/agents` | Create agent (`type` must be `agent` or `workflow`) |
 | `GET` | `/agents/:agentId` | Get agent with current version |
 | `PATCH` | `/agents/:agentId` | Update agent |
 | `DELETE` | `/agents/:agentId` | Delete agent |
 | `GET` | `/agents/:agentId/versions` | List agent versions |
-| `POST` | `/agents/:agentId/versions` | Create agent version |
+| `POST` | `/agents/:agentId/versions` | Create agent version (owns `model_config`, `run_budget`, `approval_policy`, `cache_timeout`, `tools`) |
 | `PUT` | `/agents/:agentId/versions/:versionId/promote` | Promote version to current |
 | `POST` | `/agents/:agentId/execute` | Execute agent (simulated response) |
-| `POST` | `/agents/:agentId/preview` | Preview agent |
+| `POST` | `/agents/:agentId/preview` | Preview agent execution (dry-run) |
+| `GET` | `/agents/:agentId/playground` | Get current version content to pre-fill the playground |
+| `POST` | `/agents/:agentId/playground` | Execute an agent with temporary prompt content |
 
 ## Prompts
 
@@ -31,16 +33,25 @@ For the interactive API reference with try-it-out functionality, visit **http://
 | `GET` | `/prompts/:promptId/versions` | List prompt versions |
 | `POST` | `/prompts/:promptId/versions` | Create prompt version |
 | `PUT` | `/prompts/:promptId/versions/:versionId/promote` | Promote version |
-| `POST` | `/prompts/:promptId/preview` | Preview rendered prompt |
-| `POST` | `/prompts/:promptId/run` | Run prompt (simulated response) |
+| `POST` | `/prompts/:promptId/preview` | Preview rendered prompt (dry-run, no LLM call) |
+
+Prompt versions are **content-only** in API v2 — model, sampling, tools, output
+schema, and cache TTL live on the agent version, not the prompt version.
 
 ## Executions
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/executions` | List executions (supports `?agent_id=`, `?session_id=`, `?status=`) |
-| `GET` | `/executions/:executionId` | Get execution details |
-| `GET` | `/executions/:executionId/pending-approval` | Get pending approval for execution |
+| `GET` | `/executions/approval-inbox` | List executions parked at `waiting_approval` |
+| `GET` | `/executions/:executionId` | Get execution details (fills one level of `children`) |
+| `GET` | `/executions/:executionId/tree` | Get execution with its full descendant tree |
+| `POST` | `/executions/:executionId/cancel` | Request cancellation (→ `cancel_requested`) |
+| `POST` | `/executions/:executionId/approve` | Approve a run parked at `waiting_approval` |
+| `POST` | `/executions/:executionId/deny` | Deny a run parked at `waiting_approval` |
+
+Statuses: `pending`, `running`, `completed`, `failed`, `cancelled`, `rejected`,
+`waiting_approval`, `cancel_requested`.
 
 ## Data Sources
 
@@ -81,30 +92,8 @@ For the interactive API reference with try-it-out functionality, visit **http://
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/traces` | List root traces |
+| `GET` | `/traces/summary` | Aggregate metering rollup (traces, tokens, cost, duration, errors) |
 | `GET` | `/traces/:traceId` | Get trace with spans |
-
-## Scores
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/scores` | List scores |
-| `POST` | `/scores` | Create score |
-| `GET` | `/scores/:scoreId` | Get score |
-| `PATCH` | `/scores/:scoreId` | Update score |
-| `DELETE` | `/scores/:scoreId` | Delete score |
-| `GET` | `/score-configs` | List score configs |
-| `POST` | `/score-configs` | Create score config |
-| `GET` | `/score-configs/:configId` | Get score config |
-| `PATCH` | `/score-configs/:configId` | Update score config |
-| `DELETE` | `/score-configs/:configId` | Delete score config |
-
-## Approvals
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/approvals` | List approval requests |
-| `GET` | `/approvals/:approvalId` | Get approval |
-| `POST` | `/approvals/:approvalId/decide` | Approve or reject (`{"decision": "approved"}`) |
 
 ## Agent Triggers
 
@@ -171,6 +160,7 @@ The emulator dispatches every source uniformly — signature verification and ch
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/llm-models` | List available LLM models |
+| `GET` | `/llm-models/available` | List models grouped by provider |
 
 ## Response format
 
@@ -193,8 +183,8 @@ List endpoints support `?page=` and `?limit=` query parameters. Default: page 1,
 
 ## Simulated behavior
 
-- **Agent execute** returns fake output with simulated token usage, cost, and duration
-- **Prompt run** returns simulated content with token metrics
+- **Agent execute** returns fake output with simulated token usage, cost, and duration; a version with an approval policy or approval-gated tool parks at `waiting_approval`
+- **Prompt preview** renders the content-only templates (dry-run, no LLM call)
 - **Chat send message** generates an automatic assistant reply
 - **Traces** are auto-created for every execution
 - **Data source query** returns mock rows
