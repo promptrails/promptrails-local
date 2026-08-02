@@ -3,6 +3,6 @@ name = "promptrails-local-integration-tests"
 version = "0.0.0"
 requires-python = ">=3.10"
 dependencies = [
-    "promptrails",
+    "promptrails>=0.9.0",
     "pytest",
 ]
