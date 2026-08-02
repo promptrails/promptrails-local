@@ -44,13 +44,13 @@ describe("Agents", () => {
   it("should get agent by ID", async () => {
     const agent = await client.agents.get(SEED_AGENT_ID);
     assert.equal(agent.name, "Simple Agent");
-    assert.equal(agent.type, "simple");
+    assert.equal(agent.type, "agent");
   });
 
   it("should create and delete agent", async () => {
     const agent = await client.agents.create({
       name: "JS Test Agent",
-      type: "simple",
+      type: "agent",
       description: "Created by JS integration test",
     });
     assert.ok(agent.id);

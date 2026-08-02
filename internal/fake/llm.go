@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"strings"
 	"time"
 
@@ -33,46 +32,17 @@ func GenerateExecutionOutput(agentName string, input map[string]any) map[string]
 	}
 }
 
-// GeneratePromptRunResponse creates a simulated response for a prompt run.
-// GeneratePromptRunResponse builds a simulated run result. When req carries the
-// prompt-caching or reasoning feature toggles, the token usage gains the
-// matching cached/reasoning breakdown so SDK callers can exercise those fields.
-func GeneratePromptRunResponse(promptName string, req *model.RunPromptRequest) model.RunPromptResponse {
-	content := fmt.Sprintf(
-		"[Simulated LLM response for prompt %q] "+
-			"This is a fake response from the PromptRails local emulator.",
-		promptName,
-	)
-
-	promptTokens := randomInt(50, 300)
-	completionTokens := randomInt(30, 200)
-
-	usage := map[string]int{
-		"prompt_tokens":     promptTokens,
-		"completion_tokens": completionTokens,
-		"total_tokens":      promptTokens + completionTokens,
+// GeneratePromptPreview renders a prompt's current version as a dry-run — no
+// LLM is called, so there is no token usage or cost. Prompts are content-only
+// in the Agent/Workflow (v2) model; the rendered system/user templates are
+// returned verbatim alongside the supplied input.
+func GeneratePromptPreview(prompt model.Prompt, input map[string]any) model.PreviewPromptResponse {
+	resp := model.PreviewPromptResponse{Input: input}
+	if prompt.CurrentVersion != nil {
+		resp.SystemPrompt = prompt.CurrentVersion.SystemPrompt
+		resp.UserPrompt = prompt.CurrentVersion.UserPrompt
 	}
-	if req != nil {
-		if req.PromptCaching {
-			usage["cached_tokens"] = randomInt(0, promptTokens)
-			usage["cache_creation_tokens"] = randomInt(0, promptTokens)
-		}
-		if req.ReasoningEffort != "" {
-			reasoning := randomInt(20, 150)
-			usage["reasoning_tokens"] = reasoning
-			usage["completion_tokens"] = completionTokens + reasoning
-			usage["total_tokens"] = promptTokens + completionTokens + reasoning
-		}
-	}
-
-	return model.RunPromptResponse{
-		Content:    content,
-		TokenUsage: usage,
-		Cost:       float64(promptTokens)*0.000003 + float64(completionTokens)*0.000015,
-		DurationMS: int64(randomInt(150, 1500)),
-		Model:      "gpt-4o",
-		TraceID:    GenerateTraceID(),
-	}
+	return resp
 }
 
 // GenerateChatResponse creates a simulated chat assistant reply.
@@ -169,11 +139,6 @@ func CreateExecutionTrace(exec model.Execution, agentName string) []model.Trace 
 	}
 
 	return []model.Trace{rootTrace, childTrace}
-}
-
-func randomInt(min, max int) int {
-	n, _ := rand.Int(rand.Reader, big.NewInt(int64(max-min+1)))
-	return int(n.Int64()) + min
 }
 
 func truncate(s string, maxLen int) string {

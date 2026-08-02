@@ -21,8 +21,6 @@ type Handlers struct {
 	Credential   *CredentialHandler
 	Chat         *ChatHandler
 	Trace        *TraceHandler
-	Score        *ScoreHandler
-	Approval     *ApprovalHandler
 	AgentTrigger *AgentTriggerHandler
 	AgentVFS     *AgentVFSHandler
 	MCPTool      *MCPToolHandler
@@ -43,8 +41,6 @@ func New(s *store.Store, logger *zap.Logger, version string) *Handlers {
 		Credential:   &CredentialHandler{store: s},
 		Chat:         &ChatHandler{store: s},
 		Trace:        &TraceHandler{store: s},
-		Score:        &ScoreHandler{store: s},
-		Approval:     &ApprovalHandler{store: s},
 		AgentTrigger: &AgentTriggerHandler{store: s},
 		AgentVFS:     &AgentVFSHandler{store: s},
 		MCPTool:      &MCPToolHandler{store: s},
@@ -83,6 +79,8 @@ func (h *Handlers) CreateAgentVersion(c echo.Context) error  { return h.Agent.Cr
 func (h *Handlers) PromoteAgentVersion(c echo.Context) error { return h.Agent.PromoteVersion(c) }
 func (h *Handlers) ExecuteAgent(c echo.Context) error        { return h.Agent.Execute(c) }
 func (h *Handlers) PreviewAgent(c echo.Context) error        { return h.Agent.Preview(c) }
+func (h *Handlers) PlaygroundAgent(c echo.Context) error     { return h.Agent.Playground(c) }
+func (h *Handlers) PlaygroundAgentInfo(c echo.Context) error { return h.Agent.PlaygroundInfo(c) }
 
 // ---------- Prompt delegations ----------
 
@@ -95,13 +93,16 @@ func (h *Handlers) ListPromptVersions(c echo.Context) error   { return h.Prompt.
 func (h *Handlers) CreatePromptVersion(c echo.Context) error  { return h.Prompt.CreateVersion(c) }
 func (h *Handlers) PromotePromptVersion(c echo.Context) error { return h.Prompt.PromoteVersion(c) }
 func (h *Handlers) PreviewPrompt(c echo.Context) error        { return h.Prompt.Preview(c) }
-func (h *Handlers) RunPrompt(c echo.Context) error            { return h.Prompt.Run(c) }
 
 // ---------- Execution delegations ----------
 
-func (h *Handlers) ListExecutions(c echo.Context) error     { return h.Execution.List(c) }
-func (h *Handlers) GetExecution(c echo.Context) error       { return h.Execution.Get(c) }
-func (h *Handlers) GetPendingApproval(c echo.Context) error { return h.Execution.GetPendingApproval(c) }
+func (h *Handlers) ListExecutions(c echo.Context) error   { return h.Execution.List(c) }
+func (h *Handlers) GetExecution(c echo.Context) error     { return h.Execution.Get(c) }
+func (h *Handlers) ApprovalInbox(c echo.Context) error    { return h.Execution.ApprovalInbox(c) }
+func (h *Handlers) GetExecutionTree(c echo.Context) error { return h.Execution.Tree(c) }
+func (h *Handlers) CancelExecution(c echo.Context) error  { return h.Execution.Cancel(c) }
+func (h *Handlers) ApproveExecution(c echo.Context) error { return h.Execution.Approve(c) }
+func (h *Handlers) DenyExecution(c echo.Context) error    { return h.Execution.Deny(c) }
 
 // ---------- Data Source delegations ----------
 
@@ -135,27 +136,9 @@ func (h *Handlers) SendChatMessage(c echo.Context) error   { return h.Chat.SendM
 
 // ---------- Trace delegations ----------
 
-func (h *Handlers) ListTraces(c echo.Context) error { return h.Trace.List(c) }
-func (h *Handlers) GetTrace(c echo.Context) error   { return h.Trace.Get(c) }
-
-// ---------- Score delegations ----------
-
-func (h *Handlers) ListScores(c echo.Context) error        { return h.Score.List(c) }
-func (h *Handlers) CreateScore(c echo.Context) error       { return h.Score.Create(c) }
-func (h *Handlers) GetScore(c echo.Context) error          { return h.Score.Get(c) }
-func (h *Handlers) UpdateScore(c echo.Context) error       { return h.Score.Update(c) }
-func (h *Handlers) DeleteScore(c echo.Context) error       { return h.Score.Delete(c) }
-func (h *Handlers) ListScoreConfigs(c echo.Context) error  { return h.Score.ListConfigs(c) }
-func (h *Handlers) CreateScoreConfig(c echo.Context) error { return h.Score.CreateConfig(c) }
-func (h *Handlers) GetScoreConfig(c echo.Context) error    { return h.Score.GetConfig(c) }
-func (h *Handlers) UpdateScoreConfig(c echo.Context) error { return h.Score.UpdateConfig(c) }
-func (h *Handlers) DeleteScoreConfig(c echo.Context) error { return h.Score.DeleteConfig(c) }
-
-// ---------- Approval delegations ----------
-
-func (h *Handlers) ListApprovals(c echo.Context) error  { return h.Approval.List(c) }
-func (h *Handlers) GetApproval(c echo.Context) error    { return h.Approval.Get(c) }
-func (h *Handlers) DecideApproval(c echo.Context) error { return h.Approval.Decide(c) }
+func (h *Handlers) ListTraces(c echo.Context) error   { return h.Trace.List(c) }
+func (h *Handlers) GetTrace(c echo.Context) error     { return h.Trace.Get(c) }
+func (h *Handlers) TraceSummary(c echo.Context) error { return h.Trace.Summary(c) }
 
 // ---------- Webhook Trigger delegations ----------
 
@@ -227,6 +210,16 @@ func getPagination(c echo.Context) pagination {
 		limit = 20
 	}
 	return pagination{Page: page, Limit: limit}
+}
+
+// mustJSON marshals v to JSON, returning null on error. Used for simulated
+// fixed payloads that never fail to marshal.
+func mustJSON(v any) json.RawMessage {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return json.RawMessage("null")
+	}
+	return b
 }
 
 // dataResponse wraps a single item in the standard envelope.

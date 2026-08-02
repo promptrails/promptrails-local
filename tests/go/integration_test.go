@@ -54,7 +54,7 @@ func TestCreateAndDeleteAgent(t *testing.T) {
 
 	agent, err := client.Agents.Create(ctx, &promptrails.CreateAgentParams{
 		Name:        "Integration Test Agent",
-		Type:        "simple",
+		Type:        "agent",
 		Description: "Created by Go integration test",
 	})
 	if err != nil {
@@ -231,17 +231,4 @@ func TestListDataSources(t *testing.T) {
 		t.Fatal("expected seed data sources, got 0")
 	}
 	t.Logf("found %d data sources", len(result.Data))
-}
-
-// --- Scores ---
-
-func TestListScores(t *testing.T) {
-	client := newClient()
-	ctx := context.Background()
-
-	// Just verify the endpoint works
-	_, err := client.Scores.List(ctx, nil)
-	if err != nil {
-		t.Fatalf("Scores.List: %v", err)
-	}
 }

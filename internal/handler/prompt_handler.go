@@ -109,23 +109,16 @@ func (h *PromptHandler) CreateVersion(c echo.Context) error {
 	}
 
 	version := model.PromptVersion{
-		ID:                 ksuid.New().String(),
-		PromptID:           promptID,
-		Version:            req.Version,
-		SystemPrompt:       req.SystemPrompt,
-		UserPrompt:         req.UserPrompt,
-		LLMModelID:         req.LLMModelID,
-		FallbackLLMModelID: req.FallbackLLMModelID,
-		Temperature:        req.Temperature,
-		MaxTokens:          req.MaxTokens,
-		TopP:               req.TopP,
-		InputSchema:        req.InputSchema,
-		OutputSchema:       req.OutputSchema,
-		IsCurrent:          req.SetCurrent,
-		Message:            req.Message,
-		Config:             req.Config,
-		CacheTimeout:       req.CacheTimeout,
-		CreatedAt:          time.Now(),
+		ID:           ksuid.New().String(),
+		PromptID:     promptID,
+		Version:      req.Version,
+		SystemPrompt: req.SystemPrompt,
+		UserPrompt:   req.UserPrompt,
+		InputSchema:  req.InputSchema,
+		IsCurrent:    req.SetCurrent,
+		Message:      req.Message,
+		Config:       req.Config,
+		CreatedAt:    time.Now(),
 	}
 
 	if req.SetCurrent {
@@ -163,22 +156,7 @@ func (h *PromptHandler) Preview(c echo.Context) error {
 		return badRequest(c, "invalid request body")
 	}
 
-	result := fake.GeneratePromptRunResponse(prompt.Name, nil)
-	return dataResponse(c, http.StatusOK, result)
-}
-
-func (h *PromptHandler) Run(c echo.Context) error {
-	promptID := c.Param("promptId")
-	prompt, ok := h.store.GetPrompt(promptID)
-	if !ok {
-		return notFound(c, "prompt not found")
-	}
-
-	var req model.RunPromptRequest
-	if err := c.Bind(&req); err != nil {
-		return badRequest(c, "invalid request body")
-	}
-
-	result := fake.GeneratePromptRunResponse(prompt.Name, &req)
+	// Preview is a dry-run render (no LLM call) — prompts are content-only in v2.
+	result := fake.GeneratePromptPreview(prompt, req.Input)
 	return dataResponse(c, http.StatusOK, result)
 }

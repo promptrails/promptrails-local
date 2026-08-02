@@ -22,60 +22,34 @@ func TestGenerateExecutionOutput(t *testing.T) {
 	}
 }
 
-func TestGeneratePromptRunResponse_Base(t *testing.T) {
-	resp := GeneratePromptRunResponse("greeting", nil)
+func TestGeneratePromptPreview(t *testing.T) {
+	prompt := model.Prompt{
+		Name: "greeting",
+		CurrentVersion: &model.PromptVersion{
+			SystemPrompt: "You are a helpful assistant.",
+			UserPrompt:   "Say hello to {{ name }}.",
+		},
+	}
+	input := map[string]any{"name": "Ada"}
 
-	if resp.Model != "gpt-4o" {
-		t.Errorf("Model = %q, want gpt-4o", resp.Model)
-	}
-	if resp.Cost <= 0 {
-		t.Errorf("Cost = %f, want > 0", resp.Cost)
-	}
-	if len(resp.TraceID) != 32 {
-		t.Errorf("TraceID len = %d, want 32 hex chars", len(resp.TraceID))
-	}
-	assertUsageConsistent(t, resp.TokenUsage)
+	resp := GeneratePromptPreview(prompt, input)
 
-	// Base response has no caching or reasoning breakdown.
-	if _, ok := resp.TokenUsage["cached_tokens"]; ok {
-		t.Error("base response should not have cached_tokens")
+	// Preview is a dry-run render — the content-only templates come back verbatim.
+	if resp.SystemPrompt != "You are a helpful assistant." {
+		t.Errorf("SystemPrompt = %q", resp.SystemPrompt)
 	}
-	if _, ok := resp.TokenUsage["reasoning_tokens"]; ok {
-		t.Error("base response should not have reasoning_tokens")
+	if resp.UserPrompt != "Say hello to {{ name }}." {
+		t.Errorf("UserPrompt = %q", resp.UserPrompt)
+	}
+	if resp.Input["name"] != "Ada" {
+		t.Errorf("Input not echoed: %v", resp.Input)
 	}
 }
 
-func TestGeneratePromptRunResponse_PromptCaching(t *testing.T) {
-	resp := GeneratePromptRunResponse("p", &model.RunPromptRequest{PromptCaching: true})
-	if _, ok := resp.TokenUsage["cached_tokens"]; !ok {
-		t.Error("expected cached_tokens when PromptCaching is on")
-	}
-	if _, ok := resp.TokenUsage["cache_creation_tokens"]; !ok {
-		t.Error("expected cache_creation_tokens when PromptCaching is on")
-	}
-	assertUsageConsistent(t, resp.TokenUsage)
-}
-
-func TestGeneratePromptRunResponse_Reasoning(t *testing.T) {
-	resp := GeneratePromptRunResponse("p", &model.RunPromptRequest{ReasoningEffort: "high"})
-	reasoning, ok := resp.TokenUsage["reasoning_tokens"]
-	if !ok || reasoning <= 0 {
-		t.Fatalf("expected positive reasoning_tokens, got %v (present=%v)", reasoning, ok)
-	}
-	// Reasoning tokens are folded into completion_tokens.
-	if resp.TokenUsage["completion_tokens"] < reasoning {
-		t.Errorf("completion_tokens (%d) should include reasoning (%d)",
-			resp.TokenUsage["completion_tokens"], reasoning)
-	}
-	assertUsageConsistent(t, resp.TokenUsage)
-}
-
-// total_tokens must always equal prompt_tokens + completion_tokens.
-func assertUsageConsistent(t *testing.T, u map[string]int) {
-	t.Helper()
-	if u["total_tokens"] != u["prompt_tokens"]+u["completion_tokens"] {
-		t.Errorf("total_tokens (%d) != prompt (%d) + completion (%d)",
-			u["total_tokens"], u["prompt_tokens"], u["completion_tokens"])
+func TestGeneratePromptPreview_NoCurrentVersion(t *testing.T) {
+	resp := GeneratePromptPreview(model.Prompt{Name: "empty"}, nil)
+	if resp.SystemPrompt != "" || resp.UserPrompt != "" {
+		t.Errorf("expected empty render with no current version, got %+v", resp)
 	}
 }
 

@@ -92,6 +92,8 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 	api.PUT("/agents/:agentId/versions/:versionId/promote", h.PromoteAgentVersion)
 	api.POST("/agents/:agentId/execute", h.ExecuteAgent)
 	api.POST("/agents/:agentId/preview", h.PreviewAgent)
+	api.GET("/agents/:agentId/playground", h.PlaygroundAgentInfo)
+	api.POST("/agents/:agentId/playground", h.PlaygroundAgent)
 
 	// Prompts
 	api.GET("/prompts", h.ListPrompts)
@@ -103,12 +105,15 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 	api.POST("/prompts/:promptId/versions", h.CreatePromptVersion)
 	api.PUT("/prompts/:promptId/versions/:versionId/promote", h.PromotePromptVersion)
 	api.POST("/prompts/:promptId/preview", h.PreviewPrompt)
-	api.POST("/prompts/:promptId/run", h.RunPrompt)
 
 	// Executions
 	api.GET("/executions", h.ListExecutions)
+	api.GET("/executions/approval-inbox", h.ApprovalInbox)
 	api.GET("/executions/:executionId", h.GetExecution)
-	api.GET("/executions/:executionId/pending-approval", h.GetPendingApproval)
+	api.GET("/executions/:executionId/tree", h.GetExecutionTree)
+	api.POST("/executions/:executionId/cancel", h.CancelExecution)
+	api.POST("/executions/:executionId/approve", h.ApproveExecution)
+	api.POST("/executions/:executionId/deny", h.DenyExecution)
 
 	// Data Sources
 	api.GET("/data-sources", h.ListDataSources)
@@ -137,26 +142,8 @@ func New(s *store.Store, logger *zap.Logger, corsOrigins string, version string)
 
 	// Traces
 	api.GET("/traces", h.ListTraces)
+	api.GET("/traces/summary", h.TraceSummary)
 	api.GET("/traces/:traceId", h.GetTrace)
-
-	// Scores
-	api.GET("/scores", h.ListScores)
-	api.POST("/scores", h.CreateScore)
-	api.GET("/scores/:scoreId", h.GetScore)
-	api.PATCH("/scores/:scoreId", h.UpdateScore)
-	api.DELETE("/scores/:scoreId", h.DeleteScore)
-
-	// Score Configs
-	api.GET("/score-configs", h.ListScoreConfigs)
-	api.POST("/score-configs", h.CreateScoreConfig)
-	api.GET("/score-configs/:configId", h.GetScoreConfig)
-	api.PATCH("/score-configs/:configId", h.UpdateScoreConfig)
-	api.DELETE("/score-configs/:configId", h.DeleteScoreConfig)
-
-	// Approvals
-	api.GET("/approvals", h.ListApprovals)
-	api.GET("/approvals/:approvalId", h.GetApproval)
-	api.POST("/approvals/:approvalId/decide", h.DecideApproval)
 
 	// Agent Triggers
 	api.GET("/triggers", h.ListAgentTriggers)

@@ -24,3 +24,10 @@ func (h *TraceHandler) Get(c echo.Context) error {
 	}
 	return dataResponse(c, http.StatusOK, trace)
 }
+
+// Summary returns aggregate metering statistics over all traces — the v2
+// replacement for the removed cost summary. Query filters are accepted for
+// parity with the real API but the single-namespace emulator aggregates all.
+func (h *TraceHandler) Summary(c echo.Context) error {
+	return dataResponse(c, http.StatusOK, h.store.TraceSummary())
+}
