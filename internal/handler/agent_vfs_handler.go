@@ -383,7 +383,7 @@ func (h *AgentVFSHandler) Grep(c echo.Context) error {
 		if f.IsDir {
 			continue
 		}
-		if within != "" && within != "/" && !(f.Path == within || strings.HasPrefix(f.Path, within+"/")) {
+		if within != "" && within != "/" && (f.Path != within && !strings.HasPrefix(f.Path, within+"/")) {
 			continue
 		}
 		for i, line := range strings.Split(f.Content, "\n") {
@@ -413,7 +413,7 @@ func (h *AgentVFSHandler) Glob(c echo.Context) error {
 	hasSlash := strings.Contains(pattern, "/")
 	items := []model.AgentVFSFile{}
 	for _, f := range h.store.VFSList(agentID, "/", true) {
-		if within != "" && within != "/" && !(f.Path == within || strings.HasPrefix(f.Path, within+"/")) {
+		if within != "" && within != "/" && (f.Path != within && !strings.HasPrefix(f.Path, within+"/")) {
 			continue
 		}
 		target := f.Name
