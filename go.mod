@@ -3,7 +3,7 @@ module github.com/promptrails/promptrails-local
 go 1.27.0
 
 require (
-	github.com/labstack/echo/v4 v4.15.4
+	github.com/labstack/echo/v4 v4.16.0
 	github.com/segmentio/ksuid v1.0.4
 	go.uber.org/zap v1.28.0
 )
